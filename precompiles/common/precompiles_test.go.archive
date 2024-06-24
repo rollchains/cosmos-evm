@@ -2,10 +2,11 @@ package common_test
 
 import (
 	"errors"
-	"github.com/sei-protocol/sei-chain/x/evm/state"
-	"github.com/sei-protocol/sei-chain/x/evm/types"
 	"math/big"
 	"testing"
+
+	"github.com/sei-protocol/sei-chain/x/evm/state"
+	"github.com/sei-protocol/sei-chain/x/evm/types"
 
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/sei-protocol/sei-chain/precompiles/common"

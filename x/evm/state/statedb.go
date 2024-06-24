@@ -1,6 +1,7 @@
 package state
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/tracing"
@@ -53,7 +54,7 @@ func NewDBImpl(ctx sdk.Context, k EVMKeeper, simulation bool) *DBImpl {
 	return s
 }
 
-func (s *DBImpl) AddSurplus(surplus sdk.Int) {
+func (s *DBImpl) AddSurplus(surplus math.Int) {
 	if surplus.IsNil() || surplus.IsZero() {
 		return
 	}
@@ -81,7 +82,7 @@ func (s *DBImpl) SetEVM(evm *vm.EVM) {}
 // to the database.
 func (s *DBImpl) AddPreimage(_ common.Hash, _ []byte) {}
 
-func (s *DBImpl) Finalize() (surplus sdk.Int, err error) {
+func (s *DBImpl) Finalize() (surplus math.Int, err error) {
 	if s.simulation {
 		panic("should never call finalize on a simulation DB")
 	}
@@ -199,7 +200,7 @@ type TemporaryState struct {
 	transientStates       map[string]map[string]common.Hash
 	transientAccounts     map[string][]byte
 	transientModuleStates map[string][]byte
-	surplus               sdk.Int // in wei
+	surplus               math.Int // in wei
 }
 
 func NewTemporaryState() *TemporaryState {

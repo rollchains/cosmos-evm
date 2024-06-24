@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"strings"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/sei-protocol/sei-chain/x/evm/artifacts/cw721"
@@ -43,7 +44,7 @@ func (h *EVMQueryHandler) HandleStaticCall(ctx sdk.Context, from string, to stri
 	return json.Marshal(response)
 }
 
-func (h *EVMQueryHandler) HandleERC20TransferPayload(ctx sdk.Context, recipient string, amount *sdk.Int) ([]byte, error) {
+func (h *EVMQueryHandler) HandleERC20TransferPayload(ctx sdk.Context, recipient string, amount *math.Int) ([]byte, error) {
 	abi, err := native.NativeMetaData.GetAbi()
 	if err != nil {
 		return nil, err
@@ -84,7 +85,7 @@ func (h *EVMQueryHandler) HandleERC20TokenInfo(ctx sdk.Context, contractAddress 
 	if err != nil {
 		return nil, err
 	}
-	totalSupply := sdk.NewIntFromBigInt(unpacked[0].(*big.Int))
+	totalSupply := math.NewIntFromBigInt(unpacked[0].(*big.Int))
 	response.TotalSupply = &totalSupply
 
 	bz, err = abi.Pack("name")
@@ -159,7 +160,7 @@ func (h *EVMQueryHandler) HandleERC20Balance(ctx sdk.Context, contractAddress st
 	if err != nil {
 		return nil, err
 	}
-	balance := sdk.NewIntFromBigInt(unpacked[0].(*big.Int))
+	balance := math.NewIntFromBigInt(unpacked[0].(*big.Int))
 	return json.Marshal(bindings.ERC20BalanceResponse{Balance: &balance})
 }
 
@@ -266,7 +267,7 @@ func (h *EVMQueryHandler) HandleERC721SetApprovalAllPayload(ctx sdk.Context, to 
 	return json.Marshal(res)
 }
 
-func (h *EVMQueryHandler) HandleERC20TransferFromPayload(ctx sdk.Context, owner string, recipient string, amount *sdk.Int) ([]byte, error) {
+func (h *EVMQueryHandler) HandleERC20TransferFromPayload(ctx sdk.Context, owner string, recipient string, amount *math.Int) ([]byte, error) {
 	abi, err := native.NativeMetaData.GetAbi()
 	if err != nil {
 		return nil, err
@@ -287,7 +288,7 @@ func (h *EVMQueryHandler) HandleERC20TransferFromPayload(ctx sdk.Context, owner 
 	return json.Marshal(res)
 }
 
-func (h *EVMQueryHandler) HandleERC20ApprovePayload(ctx sdk.Context, spender string, amount *sdk.Int) ([]byte, error) {
+func (h *EVMQueryHandler) HandleERC20ApprovePayload(ctx sdk.Context, spender string, amount *math.Int) ([]byte, error) {
 	abi, err := native.NativeMetaData.GetAbi()
 	if err != nil {
 		return nil, err
@@ -345,7 +346,7 @@ func (h *EVMQueryHandler) HandleERC20Allowance(ctx sdk.Context, contractAddress 
 		return nil, err
 	}
 	allowance := typed[0].(*big.Int)
-	allowanceSdk := sdk.NewIntFromBigInt(allowance)
+	allowanceSdk := math.NewIntFromBigInt(allowance)
 	response := bindings.ERC20AllowanceResponse{Allowance: &allowanceSdk}
 	return json.Marshal(response)
 }
@@ -441,7 +442,7 @@ func (h *EVMQueryHandler) HandleERC721TotalSupply(ctx sdk.Context, caller string
 	if err != nil {
 		return nil, err
 	}
-	totalSupply := sdk.NewIntFromBigInt(typed[0].(*big.Int))
+	totalSupply := math.NewIntFromBigInt(typed[0].(*big.Int))
 	response := bindings.ERC721TotalSupplyResponse{Supply: &totalSupply}
 	return json.Marshal(response)
 }
@@ -533,7 +534,7 @@ func (h *EVMQueryHandler) HandleGetSeiAddress(ctx sdk.Context, evmAddr string) (
 	return json.Marshal(response)
 }
 
-func (h *EVMQueryHandler) HandleERC721RoyaltyInfo(ctx sdk.Context, caller string, contractAddress string, tokenId string, salePrice *sdk.Int) ([]byte, error) {
+func (h *EVMQueryHandler) HandleERC721RoyaltyInfo(ctx sdk.Context, caller string, contractAddress string, tokenId string, salePrice *math.Int) ([]byte, error) {
 	callerAddr, err := sdk.AccAddressFromBech32(caller)
 	if err != nil {
 		return nil, err
@@ -565,7 +566,7 @@ func (h *EVMQueryHandler) HandleERC721RoyaltyInfo(ctx sdk.Context, caller string
 	if (typedReceiver != common.Address{}) {
 		receiver = h.k.GetSeiAddressOrDefault(ctx, typedReceiver).String()
 	}
-	royaltyAmount := sdk.NewIntFromBigInt(typed[1].(*big.Int))
+	royaltyAmount := math.NewIntFromBigInt(typed[1].(*big.Int))
 	response := bindings.ERC721RoyaltyInfoResponse{Receiver: receiver, RoyaltyAmount: &royaltyAmount}
 	return json.Marshal(response)
 }

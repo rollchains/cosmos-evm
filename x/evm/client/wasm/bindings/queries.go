@@ -1,8 +1,6 @@
 package bindings
 
-import (
-	sdk "github.com/cosmos/cosmos-sdk/types"
-)
+import "cosmossdk.io/math"
 
 type EVMQueryType string
 
@@ -124,19 +122,19 @@ type StaticCallRequest struct {
 }
 
 type ERC20TransferPayloadRequest struct {
-	Recipient string   `json:"recipient"`
-	Amount    *sdk.Int `json:"amount"`
+	Recipient string    `json:"recipient"`
+	Amount    *math.Int `json:"amount"`
 }
 
 type ERC20TransferFromPayloadRequest struct {
-	Owner     string   `json:"owner"`
-	Recipient string   `json:"recipient"`
-	Amount    *sdk.Int `json:"amount"`
+	Owner     string    `json:"owner"`
+	Recipient string    `json:"recipient"`
+	Amount    *math.Int `json:"amount"`
 }
 
 type ERC20ApprovePayloadRequest struct {
-	Spender string   `json:"spender"`
-	Amount  *sdk.Int `json:"amount"`
+	Spender string    `json:"spender"`
+	Amount  *math.Int `json:"amount"`
 }
 
 type ERC20AllowanceRequest struct {
@@ -207,10 +205,10 @@ type ERC721UriRequest struct {
 }
 
 type ERC721RoyaltyInfoRequest struct {
-	Caller          string   `json:"caller"`
-	ContractAddress string   `json:"contract_address"`
-	TokenID         string   `json:"token_id"`
-	SalePrice       *sdk.Int `json:"sale_price"`
+	Caller          string    `json:"caller"`
+	ContractAddress string    `json:"contract_address"`
+	TokenID         string    `json:"token_id"`
+	SalePrice       *math.Int `json:"sale_price"`
 }
 
 type GetEvmAddressRequest struct {
@@ -236,7 +234,7 @@ type ERCPayloadResponse struct {
 }
 
 type ERC20AllowanceResponse struct {
-	Allowance *sdk.Int `json:"allowance"`
+	Allowance *math.Int `json:"allowance"`
 }
 
 type ERC721OwnerResponse struct {
@@ -244,14 +242,14 @@ type ERC721OwnerResponse struct {
 }
 
 type ERC20TokenInfoResponse struct {
-	Name        string   `json:"name"`
-	Symbol      string   `json:"symbol"`
-	Decimals    byte     `json:"decimals"`
-	TotalSupply *sdk.Int `json:"total_supply"`
+	Name        string    `json:"name"`
+	Symbol      string    `json:"symbol"`
+	Decimals    byte      `json:"decimals"`
+	TotalSupply *math.Int `json:"total_supply"`
 }
 
 type ERC20BalanceResponse struct {
-	Balance *sdk.Int `json:"balance"`
+	Balance *math.Int `json:"balance"`
 }
 
 type ERC721ApprovedResponse struct {
@@ -263,7 +261,7 @@ type ERC721IsApprovedForAllResponse struct {
 }
 
 type ERC721TotalSupplyResponse struct {
-	Supply *sdk.Int `json:"supply"`
+	Supply *math.Int `json:"supply"`
 }
 
 type ERC721NameSymbolResponse struct {
@@ -276,8 +274,8 @@ type ERC721UriResponse struct {
 }
 
 type ERC721RoyaltyInfoResponse struct {
-	Receiver      string   `json:"receiver"`
-	RoyaltyAmount *sdk.Int `json:"royalty_amount"`
+	Receiver      string    `json:"receiver"`
+	RoyaltyAmount *math.Int `json:"royalty_amount"`
 }
 
 type GetEvmAddressResponse struct {

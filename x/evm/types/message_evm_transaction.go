@@ -13,7 +13,7 @@ const TypeMsgEVMTransaction = "evm_transaction"
 var (
 	_ sdk.Msg                            = &MsgEVMTransaction{}
 	_ codectypes.UnpackInterfacesMessage = &MsgEVMTransaction{}
-	_ sdk.ResultDecorator                = &MsgEVMTransactionResponse{}
+	// _ sdk.ResultDecorator                = &MsgEVMTransactionResponse{}
 )
 
 func NewMsgEVMTransaction(txData proto.Message) (*MsgEVMTransaction, error) {

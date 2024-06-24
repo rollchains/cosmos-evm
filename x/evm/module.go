@@ -17,6 +17,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -101,6 +102,34 @@ type AppModule struct {
 	keeper *keeper.Keeper
 }
 
+// IsAppModule implements module.AppModule.
+func (am AppModule) IsAppModule() {
+	panic("unimplemented")
+}
+
+// IsOnePerModuleType implements module.AppModule.
+func (am AppModule) IsOnePerModuleType() {
+	panic("unimplemented")
+}
+
+// RegisterGRPCGatewayRoutes implements module.AppModule.
+// Subtle: this method shadows the method (AppModuleBasic).RegisterGRPCGatewayRoutes of AppModule.AppModuleBasic.
+func (am AppModule) RegisterGRPCGatewayRoutes(client.Context, *runtime.ServeMux) {
+	panic("unimplemented")
+}
+
+// RegisterInterfaces implements module.AppModule.
+// Subtle: this method shadows the method (AppModuleBasic).RegisterInterfaces of AppModule.AppModuleBasic.
+func (am AppModule) RegisterInterfaces(cdctypes.InterfaceRegistry) {
+	panic("unimplemented")
+}
+
+// RegisterLegacyAminoCodec implements module.AppModule.
+// Subtle: this method shadows the method (AppModuleBasic).RegisterLegacyAminoCodec of AppModule.AppModuleBasic.
+func (am AppModule) RegisterLegacyAminoCodec(*codec.LegacyAmino) {
+	panic("unimplemented")
+}
+
 func NewAppModule(
 	cdc codec.Codec,
 	keeper *keeper.Keeper,
@@ -114,19 +143,6 @@ func NewAppModule(
 // Name returns the capability module's name.
 func (am AppModule) Name() string {
 	return am.AppModuleBasic.Name()
-}
-
-// Route returns the capability module's message routing key.
-func (am AppModule) Route() sdk.Route {
-	return sdk.NewRoute(types.RouterKey, NewHandler(am.keeper))
-}
-
-// QuerierRoute returns the capability module's query routing key.
-func (AppModule) QuerierRoute() string { return types.QuerierRoute }
-
-// LegacyQuerierHandler returns the capability module's Querier.
-func (am AppModule) LegacyQuerierHandler(_ *codec.LegacyAmino) sdk.Querier {
-	return nil
 }
 
 // RegisterServices registers a GRPC query service to respond to the
@@ -185,7 +201,7 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.Raw
 func (AppModule) ConsensusVersion() uint64 { return 8 }
 
 // BeginBlock executes all ABCI BeginBlock logic respective to the capability module.
-func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
+func (am AppModule) BeginBlock(ctx sdk.Context) {
 	// clear tx responses from last block
 	am.keeper.SetTxResults([]*abci.ExecTxResult{})
 	// clear the TxDeferredInfo
@@ -210,7 +226,7 @@ func (am AppModule) BeginBlock(ctx sdk.Context, _ abci.RequestBeginBlock) {
 
 // EndBlock executes all ABCI EndBlock logic respective to the evm module. It
 // returns no validator updates.
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+func (am AppModule) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	var coinbase sdk.AccAddress
 	if am.keeper.EthBlockTestConfig.Enabled {
 		blocks := am.keeper.BlockTest.Json.Blocks
@@ -251,12 +267,12 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 	}
 	if surplus.IsPositive() {
 		surplusUsei, surplusWei := state.SplitUseiWeiAmount(surplus.BigInt())
-		if surplusUsei.GT(sdk.ZeroInt()) {
+		if surplusUsei.GT(sdkmath.ZeroInt()) {
 			if err := am.keeper.BankKeeper().AddCoins(ctx, am.keeper.AccountKeeper().GetModuleAddress(types.ModuleName), sdk.NewCoins(sdk.NewCoin(am.keeper.GetBaseDenom(ctx), surplusUsei)), true); err != nil {
 				ctx.Logger().Error("failed to send usei surplus of %s to EVM module account", surplusUsei)
 			}
 		}
-		if surplusWei.GT(sdk.ZeroInt()) {
+		if surplusWei.GT(sdkmath.ZeroInt()) {
 			if err := am.keeper.BankKeeper().AddWei(ctx, am.keeper.AccountKeeper().GetModuleAddress(types.ModuleName), surplusWei); err != nil {
 				ctx.Logger().Error("failed to send wei surplus of %s to EVM module account", surplusWei)
 			}

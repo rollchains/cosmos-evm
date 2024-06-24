@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto/kzg4844"
@@ -28,12 +28,12 @@ func NewBlobTx(tx *ethtypes.Transaction) (*BlobTx, error) {
 
 	SetConvertIfPresent(tx.To(), func(to *common.Address) string { return to.Hex() }, txData.SetTo)
 	// internally BlobTx uses uint256 which is guaranteed to not have overflow, so using NewIntFromBigInt directly here
-	SetConvertIfPresent(tx.Value(), sdk.NewIntFromBigInt, txData.SetAmount)
-	SetConvertIfPresent(tx.GasFeeCap(), sdk.NewIntFromBigInt, txData.SetGasFeeCap)
-	SetConvertIfPresent(tx.GasTipCap(), sdk.NewIntFromBigInt, txData.SetGasTipCap)
+	SetConvertIfPresent(tx.Value(), math.NewIntFromBigInt, txData.SetAmount)
+	SetConvertIfPresent(tx.GasFeeCap(), math.NewIntFromBigInt, txData.SetGasFeeCap)
+	SetConvertIfPresent(tx.GasTipCap(), math.NewIntFromBigInt, txData.SetGasTipCap)
 	al := tx.AccessList()
 	SetConvertIfPresent(&al, NewAccessList, txData.SetAccesses)
-	SetConvertIfPresent(tx.BlobGasFeeCap(), sdk.NewIntFromBigInt, txData.SetBlobFeeCap)
+	SetConvertIfPresent(tx.BlobGasFeeCap(), math.NewIntFromBigInt, txData.SetBlobFeeCap)
 	bh := tx.BlobHashes()
 	SetConvertIfPresent(&bh, func(hs *[]common.Hash) [][]byte { return utils.Map(*hs, func(h common.Hash) []byte { return h[:] }) }, txData.SetBlobHashes)
 	SetConvertIfPresent(tx.BlobTxSidecar(), sidecarConverter, txData.SetBlobSidecar)
@@ -185,7 +185,7 @@ func (tx *BlobTx) SetSignatureValues(chainID, v, r, s *big.Int) {
 		tx.S = s.Bytes()
 	}
 	if chainID != nil {
-		chainIDInt := sdk.NewIntFromBigInt(chainID)
+		chainIDInt := math.NewIntFromBigInt(chainID)
 		tx.ChainID = &chainIDInt
 	}
 }

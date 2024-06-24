@@ -1,8 +1,9 @@
 package types
 
 import (
-	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const TypeMsgAssociateContractAddress = "evm_associate_contract_address"
@@ -38,7 +39,7 @@ func (msg *MsgAssociateContractAddress) GetSignBytes() []byte {
 func (msg *MsgAssociateContractAddress) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
+		return errors.Wrapf(sdkerrors.ErrInvalidAddress, "Invalid sender address (%s)", err)
 	}
 
 	if _, err := sdk.AccAddressFromBech32(msg.Address); err != nil {

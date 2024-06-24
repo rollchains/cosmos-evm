@@ -11,7 +11,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/gogo/protobuf/proto"
 	"github.com/sei-protocol/sei-chain/x/evm/types/ethtx"
 )
@@ -32,7 +31,7 @@ func GetAmino() *codec.LegacyAmino {
 }
 
 func RegisterInterfaces(registry codectypes.InterfaceRegistry) {
-	registry.RegisterImplementations((*govtypes.Content)(nil),
+	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&AddERCNativePointerProposal{},
 		&AddERCCW20PointerProposal{},
 		&AddERCCW721PointerProposal{},

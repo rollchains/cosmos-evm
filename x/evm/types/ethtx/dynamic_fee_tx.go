@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
@@ -22,9 +22,9 @@ func NewDynamicFeeTx(tx *ethtypes.Transaction) (*DynamicFeeTx, error) {
 
 	v, r, s := tx.RawSignatureValues()
 	SetConvertIfPresent(tx.To(), func(to *common.Address) string { return to.Hex() }, txData.SetTo)
-	SetConvertIfPresent(tx.Value(), sdk.NewIntFromBigInt, txData.SetAmount)
-	SetConvertIfPresent(tx.GasFeeCap(), sdk.NewIntFromBigInt, txData.SetGasFeeCap)
-	SetConvertIfPresent(tx.GasTipCap(), sdk.NewIntFromBigInt, txData.SetGasTipCap)
+	SetConvertIfPresent(tx.Value(), math.NewIntFromBigInt, txData.SetAmount)
+	SetConvertIfPresent(tx.GasFeeCap(), math.NewIntFromBigInt, txData.SetGasFeeCap)
+	SetConvertIfPresent(tx.GasTipCap(), math.NewIntFromBigInt, txData.SetGasTipCap)
 	al := tx.AccessList()
 	SetConvertIfPresent(&al, NewAccessList, txData.SetAccesses)
 
@@ -145,7 +145,7 @@ func (tx *DynamicFeeTx) SetSignatureValues(chainID, v, r, s *big.Int) {
 		tx.S = s.Bytes()
 	}
 	if chainID != nil {
-		chainIDInt := sdk.NewIntFromBigInt(chainID)
+		chainIDInt := math.NewIntFromBigInt(chainID)
 		tx.ChainID = &chainIDInt
 	}
 }

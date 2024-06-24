@@ -6,8 +6,9 @@ import (
 	"math"
 	"math/big"
 
-	sdkerrors "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -51,7 +52,7 @@ func (k *Keeper) HandleInternalEVMDelegateCall(ctx sdk.Context, req *types.MsgIn
 	if !exists || common.BytesToAddress(addr).Cmp(*to) != 0 {
 		return nil, errors.New("only pointer contract can make delegatecalls")
 	}
-	zeroInt := sdk.ZeroInt()
+	zeroInt := sdkmath.ZeroInt()
 	senderAddr, err := sdk.AccAddressFromBech32(req.Sender)
 	if err != nil {
 		return nil, err
@@ -71,7 +72,7 @@ func (k *Keeper) HandleInternalEVMDelegateCall(ctx sdk.Context, req *types.MsgIn
 	return &sdk.Result{Data: ret}, nil
 }
 
-func (k *Keeper) CallEVM(ctx sdk.Context, from common.Address, to *common.Address, val *sdk.Int, data []byte) (retdata []byte, reterr error) {
+func (k *Keeper) CallEVM(ctx sdk.Context, from common.Address, to *common.Address, val *sdkmath.Int, data []byte) (retdata []byte, reterr error) {
 	if to == nil && len(data) > params.MaxInitCodeSize {
 		return nil, fmt.Errorf("%w: code size %v, limit %v", core.ErrMaxInitCodeSizeExceeded, len(data), params.MaxInitCodeSize)
 	}
@@ -125,7 +126,7 @@ func (k *Keeper) StaticCallEVM(ctx sdk.Context, from sdk.AccAddress, to *common.
 	})
 }
 
-func (k *Keeper) callEVM(ctx sdk.Context, from common.Address, to *common.Address, val *sdk.Int, data []byte, f EVMCallFunc) ([]byte, error) {
+func (k *Keeper) callEVM(ctx sdk.Context, from common.Address, to *common.Address, val *sdkmath.Int, data []byte, f EVMCallFunc) ([]byte, error) {
 	evmGasLimit := k.getEvmGasLimitFromCtx(ctx)
 	value := utils.Big0
 	if val != nil {
@@ -158,7 +159,7 @@ func (k *Keeper) getEvmGasLimitFromCtx(ctx sdk.Context) uint64 {
 	if ctx.GasMeter().Limit() <= 0 {
 		return math.MaxUint64
 	}
-	evmGasBig := sdk.NewDecFromInt(sdk.NewIntFromUint64(seiGasRemaining)).Quo(k.GetPriorityNormalizer(ctx)).TruncateInt().BigInt()
+	evmGasBig := sdkmath.LegacyNewDecFromInt(sdkmath.NewIntFromUint64(seiGasRemaining)).Quo(k.GetPriorityNormalizer(ctx)).TruncateInt().BigInt()
 	if evmGasBig.Cmp(MaxUint64BigInt) > 0 {
 		evmGasBig = MaxUint64BigInt
 	}
@@ -166,5 +167,5 @@ func (k *Keeper) getEvmGasLimitFromCtx(ctx sdk.Context) uint64 {
 }
 
 func (k *Keeper) consumeEvmGas(ctx sdk.Context, usedEvmGas uint64) {
-	ctx.GasMeter().ConsumeGas(sdk.NewDecFromInt(sdk.NewIntFromUint64(usedEvmGas)).Mul(k.GetPriorityNormalizer(ctx)).TruncateInt().Uint64(), "call EVM")
+	ctx.GasMeter().ConsumeGas(sdkmath.LegacyNewDecFromInt(sdkmath.NewIntFromUint64(usedEvmGas)).Mul(k.GetPriorityNormalizer(ctx)).TruncateInt().Uint64(), "call EVM")
 }

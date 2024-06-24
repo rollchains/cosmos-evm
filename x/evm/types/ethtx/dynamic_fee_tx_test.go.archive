@@ -125,7 +125,7 @@ func TestValidateDynamicFeeTransaction(t *testing.T) {
 	require.NotNil(t, tx.Validate())
 	tx.Amount = amt
 	overflowed := &big.Int{}
-	sdkOverflowed := sdk.NewIntFromBigInt(overflowed.Exp(big.NewInt(math.MaxInt64), big.NewInt(4), nil))
+	sdkOverflowed := math.NewIntFromBigInt(overflowed.Exp(big.NewInt(math.MaxInt64), big.NewInt(4), nil))
 	tx.GasFeeCap = &sdkOverflowed
 	require.NotNil(t, tx.Validate())
 	tx.GasFeeCap = gfc

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
 	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
@@ -177,7 +178,7 @@ func (p Precompile) transfer(ctx sdk.Context, method *abi.Method, args []interfa
 
 	coin := sdk.Coin{
 		Denom:  validatedArgs.denom,
-		Amount: sdk.NewIntFromBigInt(validatedArgs.amount),
+		Amount: math.NewIntFromBigInt(validatedArgs.amount),
 	}
 
 	revisionNumber, ok := args[5].(uint64)
@@ -261,7 +262,7 @@ func (p Precompile) transferWithDefaultTimeout(ctx sdk.Context, method *abi.Meth
 
 	coin := sdk.Coin{
 		Denom:  validatedArgs.denom,
-		Amount: sdk.NewIntFromBigInt(validatedArgs.amount),
+		Amount: math.NewIntFromBigInt(validatedArgs.amount),
 	}
 
 	connection, err := p.getChannelConnection(ctx, validatedArgs.port, validatedArgs.channelID)

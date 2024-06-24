@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -24,8 +24,8 @@ func NewAccessListTx(tx *ethtypes.Transaction) (*AccessListTx, error) {
 	v, r, s := tx.RawSignatureValues()
 
 	SetConvertIfPresent(tx.To(), func(to *common.Address) string { return to.Hex() }, txData.SetTo)
-	SetConvertIfPresent(tx.Value(), sdk.NewIntFromBigInt, txData.SetAmount)
-	SetConvertIfPresent(tx.GasPrice(), sdk.NewIntFromBigInt, txData.SetGasPrice)
+	SetConvertIfPresent(tx.Value(), math.NewIntFromBigInt, txData.SetAmount)
+	SetConvertIfPresent(tx.GasPrice(), math.NewIntFromBigInt, txData.SetGasPrice)
 	al := tx.AccessList()
 	SetConvertIfPresent(&al, NewAccessList, txData.SetAccesses)
 
@@ -142,7 +142,7 @@ func (tx *AccessListTx) SetSignatureValues(chainID, v, r, s *big.Int) {
 		tx.S = s.Bytes()
 	}
 	if chainID != nil {
-		chainIDInt := sdk.NewIntFromBigInt(chainID)
+		chainIDInt := math.NewIntFromBigInt(chainID)
 		tx.ChainID = &chainIDInt
 	}
 }

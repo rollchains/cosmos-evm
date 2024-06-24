@@ -3,6 +3,7 @@ package wasmbinding
 import (
 	"encoding/json"
 
+	"cosmossdk.io/errors"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
@@ -26,14 +27,14 @@ type SeiWasmMessage struct {
 func CustomEncoder(sender sdk.AccAddress, msg json.RawMessage) ([]sdk.Msg, error) {
 	var parsedMessage SeiWasmMessage
 	if err := json.Unmarshal(msg, &parsedMessage); err != nil {
-		return []sdk.Msg{}, sdkerrors.Wrap(err, "Error parsing Sei Wasm Message")
+		return []sdk.Msg{}, errors.Wrap(err, "Error parsing Sei Wasm Message")
 	}
 	switch {
 	case parsedMessage.CallEVM != nil:
 		return evmwasm.EncodeCallEVM(parsedMessage.CallEVM, sender)
 	case parsedMessage.DelegateCallEVM != nil:
 		// return evmwasm.EncodeDelegateCallEVM(parsedMessage.DelegateCallEVM, sender, info, codeInfo)
-		return []sdk.Msg{}, sdkerrors.Wrap(sdkerrors.ErrUnknownRequest, "parsedMessage.DelegateCallEVM not implemented yet (requires wasmd fork?? idk)")
+		return []sdk.Msg{}, errors.Wrap(sdkerrors.ErrUnknownRequest, "parsedMessage.DelegateCallEVM not implemented yet (requires wasmd fork?? idk)")
 	default:
 		return []sdk.Msg{}, wasmvmtypes.UnsupportedRequest{Kind: "Unknown Sei Wasm Message"}
 	}

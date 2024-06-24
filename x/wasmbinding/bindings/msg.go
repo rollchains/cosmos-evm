@@ -1,6 +1,7 @@
 package bindings
 
 import (
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 )
@@ -35,9 +36,9 @@ type BurnTokens struct {
 }
 
 type CallEVM struct {
-	Value *sdk.Int `json:"value"`
-	To    string   `json:"to"`
-	Data  string   `json:"data"` // base64
+	Value *sdkmath.Int `json:"value"`
+	To    string       `json:"to"`
+	Data  string       `json:"data"` // base64
 }
 
 type DelegateCallEVM struct {

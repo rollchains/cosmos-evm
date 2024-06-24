@@ -4,6 +4,7 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	evmkeeper "github.com/sei-protocol/sei-chain/x/evm/keeper"
@@ -33,7 +34,9 @@ func (r *CustomRouter) Handler(msg sdk.Msg) baseapp.MsgServiceHandler {
 
 // forked from wasm
 func CustomMessageHandler(
+	c codec.Codec,
 	router wasmkeeper.MessageRouter,
+	ics4Wrapper wasmtypes.ICS4Wrapper,
 	channelKeeper wasmtypes.ChannelKeeper,
 	capabilityKeeper wasmtypes.CapabilityKeeper,
 	bankKeeper wasmtypes.Burner,
@@ -44,12 +47,11 @@ func CustomMessageHandler(
 	encoders := wasmkeeper.DefaultEncoders(unpacker, portSource)
 	encoders = encoders.Merge(
 		&wasmkeeper.MessageEncoders{
-			// TODO: this requires a wasm fork
 			Custom: CustomEncoder,
 		})
 	return wasmkeeper.NewMessageHandlerChain(
-		wasmkeeper.NewSDKMessageHandler(&CustomRouter{MessageRouter: router, evmKeeper: evmKeeper}, encoders),
-		wasmkeeper.NewIBCRawPacketHandler(channelKeeper, capabilityKeeper),
+		wasmkeeper.NewSDKMessageHandler(c, &CustomRouter{MessageRouter: router, evmKeeper: evmKeeper}, encoders),
+		wasmkeeper.NewIBCRawPacketHandler(ics4Wrapper, channelKeeper, capabilityKeeper),
 		wasmkeeper.NewBurnCoinMessageHandler(bankKeeper),
 	)
 }

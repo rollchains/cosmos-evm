@@ -16,3 +16,4 @@ Built off commit: f6137af10683b8dd5f06b6f07242f9f713b0c2ff (Mon Jun 24 12:21:25 
 
 # other
 - question: wasm bindings required? maybe we don't allow cw20 pairings? but does this break ERC20<->bank? we do not care about ERC20<->CW. (x/evm/client/wasm/encoder.go)
+- are tokenfactory bindings required? (so ERC20 / CW20 can be minted and handled? or does it use native bank for the pointer contract logic)

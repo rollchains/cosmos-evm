@@ -11,7 +11,9 @@ import (
 	// "github.com/sei-protocol/sei-chain/x/evm/types"
 )
 
-func EncodeCallEVM(rawMsg json.RawMessage, sender sdk.AccAddress, info wasmvmtypes.MessageInfo) ([]sdk.Msg, error) {
+// func EncodeCallEVM(rawMsg json.RawMessage, sender sdk.AccAddress, info wasmvmtypes.MessageInfo) ([]sdk.Msg, error) {
+func EncodeCallEVM(rawMsg json.RawMessage, sender sdk.AccAddress) ([]sdk.Msg, error) {
+	panic("EncodeCallEVM not implemented")
 	// encodedCallEVM := bindings.CallEVM{}
 	// if err := json.Unmarshal(rawMsg, &encodedCallEVM); err != nil {
 	// 	return []sdk.Msg{}, err
@@ -31,6 +33,7 @@ func EncodeCallEVM(rawMsg json.RawMessage, sender sdk.AccAddress, info wasmvmtyp
 }
 
 func EncodeDelegateCallEVM(rawMsg json.RawMessage, sender sdk.AccAddress, info wasmvmtypes.MessageInfo, codeInfo wasmtypes.CodeInfo) ([]sdk.Msg, error) {
+	panic("EncodeDelegateCallEVM not implemented")
 	// encodedCallEVM := bindings.DelegateCallEVM{}
 	// if err := json.Unmarshal(rawMsg, &encodedCallEVM); err != nil {
 	// 	return []sdk.Msg{}, err

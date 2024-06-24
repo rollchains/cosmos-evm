@@ -9,4 +9,10 @@ Built off commit: f6137af10683b8dd5f06b6f07242f9f713b0c2ff (Mon Jun 24 12:21:25 
 - cd evmrpc find . -type f -name '*_test.go' -exec sh -c 'x="{}"; mv "$x" "${x}.archive"' \;
 - copy in utils/ (no breaks)
 - copy in precompiles (rename test)
+- copy in x/evm, rename files
 - replace github.com/cometbft/cometbft -> github.com/cometbft/cometbft
+- evm ante decorators modified to not use constants, but allow NewAnte setup for EVMAssociatePriority & MaxPriority vars
+
+
+# other
+- question: wasm bindings required? maybe we don't allow cw20 pairings? but does this break ERC20<->bank? we do not care about ERC20<->CW. (x/evm/client/wasm/encoder.go)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"math/big"
 	"time"
 
@@ -30,6 +31,12 @@ import (
 	"github.com/sei-protocol/sei-chain/x/evm/types"
 	rpcclient "github.com/tendermint/tendermint/rpc/client"
 	"github.com/tendermint/tendermint/rpc/coretypes"
+)
+
+const (
+	EVMAssociatePriority = math.MaxInt64 - 101
+	// This is the max priority a non oracle or associate tx can take
+	MaxPriority = math.MaxInt64 - 1000
 )
 
 type SimulationAPI struct {
@@ -307,7 +314,7 @@ func (b *Backend) StateAtTransaction(ctx context.Context, block *ethtypes.Block,
 				metrics.IncrementAssociationError("state_at_tx", err)
 				return nil, vm.BlockContext{}, nil, nil, err
 			}
-			if err := ante.NewEVMPreprocessDecorator(b.keeper, b.keeper.AccountKeeper()).AssociateAddresses(statedb.Ctx(), seiAddr, msg.From, nil); err != nil {
+			if err := ante.NewEVMPreprocessDecorator(b.keeper, b.keeper.AccountKeeper(), EVMAssociatePriority).AssociateAddresses(statedb.Ctx(), seiAddr, msg.From, nil); err != nil {
 				return nil, vm.BlockContext{}, nil, nil, err
 			}
 		}
@@ -346,7 +353,7 @@ func (b *Backend) StateAtBlock(ctx context.Context, block *ethtypes.Block, reexe
 				metrics.IncrementAssociationError("state_at_block", err)
 				return nil, emptyRelease, err
 			}
-			if err := ante.NewEVMPreprocessDecorator(b.keeper, b.keeper.AccountKeeper()).AssociateAddresses(statedb.Ctx(), seiAddr, msg.From, nil); err != nil {
+			if err := ante.NewEVMPreprocessDecorator(b.keeper, b.keeper.AccountKeeper(), EVMAssociatePriority).AssociateAddresses(statedb.Ctx(), seiAddr, msg.From, nil); err != nil {
 				return nil, emptyRelease, err
 			}
 		}

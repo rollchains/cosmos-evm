@@ -5,7 +5,6 @@ import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	aclkeeper "github.com/cosmos/cosmos-sdk/x/accesscontrol/keeper"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	evmwasm "github.com/sei-protocol/sei-chain/x/evm/client/wasm"
 	evmkeeper "github.com/sei-protocol/sei-chain/x/evm/keeper"
@@ -23,7 +22,6 @@ func RegisterCustomPlugins(
 	bankKeeper wasmtypes.Burner,
 	unpacker codectypes.AnyUnpacker,
 	portSource wasmtypes.ICS20TransferPortSource,
-	aclKeeper aclkeeper.Keeper,
 	evmKeeper *evmkeeper.Keeper,
 ) []wasmkeeper.Option {
 	// dexHandler := dexwasm.NewDexWasmQueryHandler(dex)

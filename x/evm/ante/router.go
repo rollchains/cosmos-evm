@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkacltypes "github.com/cosmos/cosmos-sdk/types/accesscontrol"
 	"github.com/sei-protocol/sei-chain/x/evm/types"
 )
 
@@ -40,9 +39,9 @@ func (r EVMRouterDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 	return r.defaultAnteHandler(ctx, tx, simulate)
 }
 
-func (r EVMRouterDecorator) AnteDeps(txDeps []sdkacltypes.AccessOperation, tx sdk.Tx, txIndex int) (newTxDeps []sdkacltypes.AccessOperation, err error) {
+func (r EVMRouterDecorator) AnteDeps(tx sdk.Tx, txIndex int) (err error) {
 	if isEVM, err := IsEVMMessage(tx); err != nil {
-		return nil, err
+		return err
 	} else if isEVM {
 		return r.evmAnteDepGenerator(txDeps, tx, txIndex)
 	}

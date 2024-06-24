@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	rpcclient "github.com/cometbft/cometbft/rpc/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/eth/tracers"
@@ -11,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/lib/ethapi"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/sei-protocol/sei-chain/x/evm/keeper"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
 )
 
 type DebugAPI struct {

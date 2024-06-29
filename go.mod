@@ -6,17 +6,18 @@ go 1.22.0
 replace (
 	// SDK v50 fix
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
+	cosmossdk.io/store => /home/reece/Desktop/Programming/Go/cosmos-sdk/store
 
 	// initial matching upstream impl
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
-	// github.com/cometbft/cometbft => github.com/sei-protocol/sei-tendermint v0.3.4
-	// github.com/tendermint/tm-db => github.com/sei-protocol/tm-db v0.0.4
+	// evm event support (rollchains/cosmos-sdk reece/evm-v50)
+	github.com/cosmos/cosmos-sdk => /home/reece/Desktop/Programming/Go/cosmos-sdk
 
+	// ---
 	// Why?
 	github.com/ethereum/go-ethereum => github.com/sei-protocol/go-ethereum v1.13.5-sei-22
 	// breaks SDK app.toml parsing in ictest w/ SDK
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0
-	// github.com/cosmos/cosmos-sdk => github.com/sei-protocol/sei-cosmos v0.3.19
 	// github.com/cosmos/iavl => github.com/sei-protocol/sei-iavl v0.1.9
 	// github.com/cosmos/ibc-go/v8 => github.com/sei-protocol/sei-ibc-go/v3 v3.3.1
 	// github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
@@ -27,11 +28,11 @@ replace (
 
 require (
 	cosmossdk.io/errors v1.0.1
+	cosmossdk.io/log v1.3.1
 	cosmossdk.io/math v1.3.0
 	cosmossdk.io/store v1.1.0
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
-	github.com/armon/go-metrics v0.4.1
 	github.com/btcsuite/btcd v0.22.1
 	github.com/cometbft/cometbft v0.38.7
 	github.com/cosmos/cosmos-sdk v0.50.7
@@ -44,6 +45,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
+	github.com/hashicorp/go-metrics v0.5.3
 	github.com/holiman/uint256 v1.2.4
 	github.com/rs/cors v1.8.3
 	github.com/spf13/cast v1.6.0
@@ -65,7 +67,6 @@ require (
 	cosmossdk.io/collections v0.4.0 // indirect
 	cosmossdk.io/core v0.11.0 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
-	cosmossdk.io/log v1.3.1 // indirect
 	cosmossdk.io/x/evidence v0.1.0 // indirect
 	cosmossdk.io/x/feegrant v0.1.0 // indirect
 	cosmossdk.io/x/tx v0.13.3 // indirect
@@ -157,7 +158,6 @@ require (
 	github.com/hashicorp/go-getter v1.7.1 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-immutable-radix v1.3.1 // indirect
-	github.com/hashicorp/go-metrics v0.5.3 // indirect
 	github.com/hashicorp/go-plugin v1.5.2 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect

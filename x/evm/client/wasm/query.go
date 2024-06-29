@@ -174,7 +174,7 @@ func (h *EVMQueryHandler) HandleERC721Owner(ctx sdk.Context, caller string, cont
 	if err != nil {
 		return nil, err
 	}
-	t, ok := sdk.NewIntFromString(tokenId)
+	t, ok := math.NewIntFromString(tokenId)
 	if !ok {
 		return nil, errors.New("invalid token ID for ERC721, must be a big Int")
 	}
@@ -212,7 +212,7 @@ func (h *EVMQueryHandler) HandleERC721TransferPayload(ctx sdk.Context, from stri
 	if !found {
 		return nil, types.NewAssociationMissingErr(recipient)
 	}
-	t, ok := sdk.NewIntFromString(tokenId)
+	t, ok := math.NewIntFromString(tokenId)
 	if !ok {
 		return nil, errors.New("invalid token ID for ERC721, must be a big Int")
 	}
@@ -238,7 +238,7 @@ func (h *EVMQueryHandler) HandleERC721ApprovePayload(ctx sdk.Context, spender st
 	if err != nil {
 		return nil, err
 	}
-	t, ok := sdk.NewIntFromString(tokenId)
+	t, ok := math.NewIntFromString(tokenId)
 	if !ok {
 		return nil, errors.New("invalid token ID for ERC721, must be a big Int")
 	}
@@ -361,7 +361,7 @@ func (h *EVMQueryHandler) HandleERC721Approved(ctx sdk.Context, caller string, c
 	if err != nil {
 		return nil, err
 	}
-	t, ok := sdk.NewIntFromString(tokenId)
+	t, ok := math.NewIntFromString(tokenId)
 	if !ok {
 		return nil, errors.New("invalid token ID for ERC721, must be a big Int")
 	}
@@ -492,7 +492,7 @@ func (h *EVMQueryHandler) HandleERC721Uri(ctx sdk.Context, caller string, contra
 	if err != nil {
 		return nil, err
 	}
-	t, ok := sdk.NewIntFromString(tokenId)
+	t, ok := math.NewIntFromString(tokenId)
 	if !ok {
 		return nil, errors.New("invalid token ID for ERC721, must be a big Int")
 	}
@@ -539,7 +539,7 @@ func (h *EVMQueryHandler) HandleERC721RoyaltyInfo(ctx sdk.Context, caller string
 	if err != nil {
 		return nil, err
 	}
-	t, ok := sdk.NewIntFromString(tokenId)
+	t, ok := math.NewIntFromString(tokenId)
 	if !ok {
 		return nil, errors.New("invalid token ID for ERC721, must be a big Int")
 	}

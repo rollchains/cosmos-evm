@@ -1,15 +1,16 @@
 package ante
 
 import (
-	"errors"
 	"fmt"
 	"math/big"
 
-	sdkerrors "cosmossdk.io/errors"
+	"cosmossdk.io/errors"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -58,7 +59,7 @@ func (p *EVMPreprocessDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	}
 
 	// use infinite gas meter for EVM transaction because EVM handles gas checking from within
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeterWithMultiplier(ctx))
+	ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeterWithMultiplier(ctx.GasMeter()))
 
 	derived := msg.Derived
 	seiAddr := derived.SenderSeiAddr
@@ -70,12 +71,12 @@ func (p *EVMPreprocessDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	isAssociateTx := derived.IsAssociate
 	_, isAssociated := p.evmKeeper.GetEVMAddress(ctx, seiAddr)
 	if isAssociateTx && isAssociated {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "account already has association set")
+		return ctx, errors.Wrap(sdkerrors.ErrInvalidRequest, "account already has association set")
 	} else if isAssociateTx {
 		// check if the account has enough balance (without charging)
 		if !p.IsAccountBalancePositive(ctx, seiAddr, evmAddr) {
 			// metrics.IncrementAssociationError("associate_tx_insufficient_funds", evmtypes.NewAssociationMissingErr(seiAddr.String()))
-			return ctx, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "account needs to have at least 1 wei to force association")
+			return ctx, errors.Wrap(sdkerrors.ErrInsufficientFunds, "account needs to have at least 1 wei to force association")
 		}
 		if err := p.AssociateAddresses(ctx, seiAddr, evmAddr, pubkey); err != nil {
 			return ctx, err
@@ -187,6 +188,7 @@ func Preprocess(ctx sdk.Context, msgEVMTransaction *evmtypes.MsgEVMTransaction) 
 	return nil
 }
 
+// TODO: I do not think this applies to normal networks
 func (p *EVMPreprocessDecorator) AnteDeps(tx sdk.Tx, txIndex int, next sdk.AnteDepGenerator) (err error) {
 	panic("p *EVMPreprocessDecorator) AnteDeps implement me")
 	// msg := evmtypes.MustGetEVMTransactionMessage(tx)

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	rpcclient "github.com/cometbft/cometbft/rpc/client"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"

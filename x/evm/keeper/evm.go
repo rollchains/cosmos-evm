@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	sdkmath "cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -84,7 +85,7 @@ func (k *Keeper) CallEVM(ctx sdk.Context, from common.Address, to *common.Addres
 		value = val.BigInt()
 	}
 	// This call was not part of an existing StateTransition, so it should trigger one
-	executionCtx := ctx.WithGasMeter(sdk.NewInfiniteGasMeterWithMultiplier(ctx))
+	executionCtx := ctx.WithGasMeter(storetypes.NewInfiniteGasMeterWithMultiplier(ctx.GasMeter()))
 	stateDB := state.NewDBImpl(executionCtx, k, false)
 	gp := k.GetGasPool()
 	evmMsg := &core.Message{
@@ -142,7 +143,7 @@ func (k *Keeper) callEVM(ctx sdk.Context, from common.Address, to *common.Addres
 
 // only used for StaticCalls
 func (k *Keeper) createReadOnlyEVM(ctx sdk.Context, from sdk.AccAddress) (*vm.EVM, error) {
-	executionCtx := ctx.WithGasMeter(sdk.NewInfiniteGasMeterWithMultiplier(ctx))
+	executionCtx := ctx.WithGasMeter(storetypes.NewInfiniteGasMeterWithMultiplier(ctx.GasMeter()))
 	stateDB := state.NewDBImpl(executionCtx, k, true)
 	gp := k.GetGasPool()
 	blockCtx, err := k.GetVMBlockContext(executionCtx, gp)

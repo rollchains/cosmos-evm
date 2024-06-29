@@ -3,10 +3,10 @@ package ante
 import (
 	"math/big"
 
-	sdkerrors "cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
 	evmkeeper "github.com/sei-protocol/sei-chain/x/evm/keeper"

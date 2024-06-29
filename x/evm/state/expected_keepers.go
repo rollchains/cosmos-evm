@@ -1,6 +1,7 @@
 package state
 
 import (
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
@@ -8,7 +9,7 @@ import (
 )
 
 type EVMKeeper interface {
-	PrefixStore(sdk.Context, []byte) sdk.KVStore
+	PrefixStore(sdk.Context, []byte) storetypes.KVStore
 	PurgePrefix(sdk.Context, []byte)
 	GetSeiAddress(sdk.Context, common.Address) (sdk.AccAddress, bool)
 	GetSeiAddressOrDefault(ctx sdk.Context, evmAddress common.Address) sdk.AccAddress

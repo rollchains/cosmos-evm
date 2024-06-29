@@ -31,5 +31,12 @@ func (k *Keeper) GetAnteSurplusSum(ctx sdk.Context) math.Int {
 }
 
 func (k *Keeper) DeleteAllAnteSurplus(ctx sdk.Context) {
-	_ = prefix.NewStore(ctx.KVStore(k.memStoreKey), types.AnteSurplusPrefix).DeleteAll(nil, nil)
+	// TODO: old: _ = prefix.NewStore(ctx.KVStore(k.memStoreKey), types.AnteSurplusPrefix).DeleteAll(nil, nil)
+	s := prefix.NewStore(ctx.KVStore(k.memStoreKey), types.AnteSurplusPrefix)
+	iter := s.Iterator(nil, nil)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		s.Delete(iter.Key())
+	}
+
 }

@@ -176,8 +176,13 @@ func (k *Keeper) PrefixStore(ctx sdk.Context, pref []byte) storetypes.KVStore {
 
 func (k *Keeper) PurgePrefix(ctx sdk.Context, pref []byte) {
 	store := k.PrefixStore(ctx, pref)
-	if err := store.DeleteAll(nil, nil); err != nil {
-		panic(err)
+	// if err := store.DeleteAll(nil, nil); err != nil {
+	// 	panic(err)
+	// }
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		store.Delete(iter.Key())
 	}
 }
 
@@ -282,8 +287,8 @@ func (k *Keeper) ClearEVMTxDeferredInfo() {
 }
 
 func (k *Keeper) getHistoricalHash(ctx sdk.Context, h int64) common.Hash {
-	histInfo, found := k.stakingKeeper.GetHistoricalInfo(ctx, h)
-	if !found {
+	histInfo, err := k.stakingKeeper.GetHistoricalInfo(ctx, h)
+	if err != nil {
 		// too old, already pruned
 		return common.Hash{}
 	}

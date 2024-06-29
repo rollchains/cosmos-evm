@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"cosmossdk.io/math"
+	sdkmath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -89,7 +90,13 @@ func HandlePaymentUsei(ctx sdk.Context, precompileAddr sdk.AccAddress, payer sdk
 	if !wei.IsZero() {
 		return sdk.Coin{}, fmt.Errorf("selected precompile function does not allow payment with non-zero wei remainder: received %s", value)
 	}
-	coin := sdk.NewCoin(sdk.MustGetBaseDenom(), usei)
+
+	base, err := sdk.GetBaseDenom()
+	if err != nil {
+		panic(fmt.Errorf("precompiles common: failed to get base denom: %w", err))
+	}
+
+	coin := sdk.NewCoin(base, usei)
 	// refund payer because the following precompile logic will debit the payments from payer's account
 	// this creates a new event manager to avoid surfacing these as cosmos events
 	if err := bankKeeper.SendCoins(ctx.WithEventManager(sdk.NewEventManager()), precompileAddr, payer, sdk.NewCoins(coin)); err != nil {
@@ -116,7 +123,7 @@ sei gas price = fee / sei gas = fee / (evm gas * multiplier) = evm gas / multipl
 func GetRemainingGas(ctx sdk.Context, evmKeeper EVMKeeper) uint64 {
 	gasMultipler := evmKeeper.GetPriorityNormalizer(ctx)
 	seiGasRemaining := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumedToLimit()
-	return sdk.NewDecFromInt(sdk.NewIntFromUint64(seiGasRemaining)).Quo(gasMultipler).TruncateInt().Uint64()
+	return sdkmath.LegacyNewDecFromInt(sdkmath.NewIntFromUint64(seiGasRemaining)).Quo(gasMultipler).TruncateInt().Uint64()
 }
 
 func ExtractMethodID(input []byte) ([]byte, error) {

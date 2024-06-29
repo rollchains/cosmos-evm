@@ -8,14 +8,14 @@ import (
 	"github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/cosmos/ibc-go/v8/modules/core/exported"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	ibctypes "github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
 	"github.com/ethereum/go-ethereum/common"
-	// oracletypes "github.com/sei-protocol/sei-chain/x/oracle/types"
 )
 
 type BankKeeper interface {
@@ -33,7 +33,7 @@ type EVMKeeper interface {
 	GetSeiAddressOrDefault(ctx sdk.Context, evmAddress common.Address) sdk.AccAddress // only used for getting precompile Sei addresses
 	GetEVMAddress(sdk.Context, sdk.AccAddress) (common.Address, bool)
 	GetCodeHash(sdk.Context, common.Address) common.Hash
-	GetPriorityNormalizer(ctx sdk.Context) sdk.Dec
+	GetPriorityNormalizer(ctx sdk.Context) sdkmath.LegacyDec
 	GetBaseDenom(ctx sdk.Context) string
 	SetERC20NativePointer(ctx sdk.Context, token string, addr common.Address) error
 	GetERC20NativePointer(ctx sdk.Context, token string) (addr common.Address, version uint16, exists bool)
@@ -70,7 +70,7 @@ type StakingKeeper interface {
 }
 
 type GovKeeper interface {
-	AddVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, options govtypes.WeightedVoteOptions) error
+	AddVote(ctx sdk.Context, proposalID uint64, voterAddr sdk.AccAddress, options govv1types.WeightedVoteOptions) error
 	AddDeposit(ctx sdk.Context, proposalID uint64, depositorAddr sdk.AccAddress, depositAmount sdk.Coins) (bool, error)
 }
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cometbft/cometbft/libs/log"
+	"cosmossdk.io/log"
 	"github.com/sei-protocol/sei-chain/utils/metrics"
 )
 

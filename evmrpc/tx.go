@@ -8,7 +8,6 @@ import (
 	"time"
 
 	rpcclient "github.com/cometbft/cometbft/rpc/client"
-	"github.com/cometbft/cometbft/rpc/core/types"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -24,7 +23,8 @@ import (
 	"github.com/sei-protocol/sei-chain/x/evm/types"
 )
 
-const UnconfirmedTxQueryMaxPage = 20
+var UnconfirmedTxQueryMaxLimit int = 10_000
+
 const UnconfirmedTxQueryPerPage = 30
 
 type TransactionAPI struct {
@@ -100,11 +100,13 @@ func (t *TransactionAPI) GetTransactionByHash(ctx context.Context, hash common.H
 	defer recordMetrics("eth_getTransactionByHash", t.connectionType, startTime, returnErr == nil)
 	sdkCtx := t.ctxProvider(LatestCtxHeight)
 	// first try get from mempool
-	for page := 1; page <= UnconfirmedTxQueryMaxPage; page++ {
-		res, err := t.tmClient.UnconfirmedTxs(ctx, &page, nil)
-		if err != nil || len(res.Txs) == 0 {
-			break
-		}
+	// TODO(reece): Is this limit to large? does not seem we can paginate so I don't see a better way.
+	res, err := t.tmClient.UnconfirmedTxs(ctx, &UnconfirmedTxQueryMaxLimit)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(res.Txs) != 0 {
 		for _, tx := range res.Txs {
 			etx := getEthTxForTxBz(tx, t.txConfig.TxDecoder())
 			if etx != nil && etx.Hash() == hash {

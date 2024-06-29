@@ -10,10 +10,9 @@ import (
 
 	"cosmossdk.io/store/cachekv"
 	iavlstore "cosmossdk.io/store/iavl"
-	abci "github.com/cometbft/cometbft/abci/types"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cometbft/cometbft/proto/tendermint/crypto"
 	rpcclient "github.com/cometbft/cometbft/rpc/client"
-	"github.com/cometbft/cometbft/rpc/core/types"
 	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -145,12 +144,15 @@ OUTER:
 	for _, key := range storageKeys {
 		paddedKey := common.BytesToHash([]byte(key))
 		formattedKey := append(types.StateKey(address), paddedKey[:]...)
-		qres := iavl.Query(abci.RequestQuery{
+		qres, err := iavl.Query(&storetypes.RequestQuery{
 			Path:   "/key",
 			Data:   formattedKey,
 			Height: block.Block.Height,
 			Prove:  true,
 		})
+		if err != nil {
+			return nil, err
+		}
 		proofResult.HexValues = append(proofResult.HexValues, hex.EncodeToString(qres.Value))
 		proofResult.StorageProof = append(proofResult.StorageProof, qres.ProofOps)
 	}

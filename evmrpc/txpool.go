@@ -41,7 +41,7 @@ func (t *TxPoolAPI) Content(ctx context.Context) (result map[string]map[string]m
 	}
 
 	total := t.txPoolConfig.maxNumTxs
-	resUnconfirmedTxs, err := t.tmClient.UnconfirmedTxs(ctx, nil, &total)
+	resUnconfirmedTxs, err := t.tmClient.UnconfirmedTxs(ctx, &total)
 	if err != nil {
 		return nil, err
 	}

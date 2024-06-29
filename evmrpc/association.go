@@ -18,6 +18,10 @@ import (
 	"github.com/sei-protocol/sei-chain/x/evm/types/ethtx"
 )
 
+const (
+	RootCodespace = "sdk"
+)
+
 type AssociationAPI struct {
 	tmClient       rpcclient.Client
 	keeper         *keeper.Keeper
@@ -74,13 +78,13 @@ func (t *AssociationAPI) Associate(ctx context.Context, req *AssociateRequest) (
 		return encodeErr
 	}
 
-	res, broadcastError := t.tmClient.BroadcastTx(ctx, txbz)
+	res, broadcastError := t.tmClient.BroadcastTxSync(ctx, txbz)
 	if broadcastError != nil {
 		err = broadcastError
 	} else if res == nil {
 		err = errors.New("missing broadcast response")
 	} else if res.Code != 0 {
-		err = sdkerrors.ABCIError(sdkerrors.RootCodespace, res.Code, "")
+		err = sdkerrors.ABCIError(RootCodespace, res.Code, "")
 	}
 
 	return err

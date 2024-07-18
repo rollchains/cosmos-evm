@@ -6,7 +6,5 @@ import "gogoproto/gogo.proto";
 option go_package = "github.com/sei-protocol/sei-chain/x/evm/types";
 
 message Whitelist {
-    repeated string hashes = 1 [
-      (gogoproto.moretags) = "yaml:\"hashes\""
-    ];
+  repeated string hashes = 1 [ (gogoproto.moretags) = "yaml:\"hashes\"" ];
 }

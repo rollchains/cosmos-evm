@@ -6,10 +6,11 @@ import "seiprotocol/seichain/evm/params.proto";
 
 option go_package = "github.com/sei-protocol/sei-chain/x/evm/types";
 
-// AddressAssociation represents an association between a Cosmos and an Ethereum address.
+// AddressAssociation represents an association between a Cosmos and an Ethereum
+// address.
 message AddressAssociation {
-  string sei_address = 1;    // Sei address
-  string eth_address = 2;    // Ethereum address
+  string sei_address = 1; // Sei address
+  string eth_address = 2; // Ethereum address
 }
 
 message Code {
@@ -36,9 +37,10 @@ message Serialized {
 
 // GenesisState defines the evm module's genesis state.
 message GenesisState {
-  Params params = 1 [(gogoproto.nullable) = false];
-  repeated AddressAssociation address_associations = 2; // List of address associations
-  repeated Code codes = 3; // List of stored code
+  Params params = 1 [ (gogoproto.nullable) = false ];
+  repeated AddressAssociation address_associations =
+      2;                             // List of address associations
+  repeated Code codes = 3;           // List of stored code
   repeated ContractState states = 4; // List of contract state
   repeated Nonce nonces = 5;
   repeated Serialized serialized = 6;

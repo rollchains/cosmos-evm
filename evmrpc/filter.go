@@ -225,34 +225,52 @@ func (a *FilterAPI) getBlockHeadersAfter(
 	cursor string,
 ) ([]common.Hash, string, error) {
 	q := NewBlockQueryBuilder()
-	builtQuery := q.Build()
-	hasMore := true
+	builtQuery := q.Build() // TODO: verify this is a good query
+	// hasMore := true
 	headers := []common.Hash{}
-	for hasMore {
-		res, err := a.tmClient.Events(ctx, &coretypes.RequestEvents{
-			Filter: &coretypes.EventFilter{Query: builtQuery},
-			After:  cursor,
-		})
-		if err != nil {
-			return nil, "", err
-		}
-		hasMore = res.More
-		cursor = res.Newest
-
-		for _, item := range res.Items {
-			wrapper := EventItemDataWrapper{}
-			err := json.Unmarshal(item.Data, &wrapper)
-			if err != nil {
-				return nil, "", err
-			}
-			block := tmtypes.EventDataNewBlock{}
-			err = json.Unmarshal(wrapper.Value, &block)
-			if err != nil {
-				return nil, "", err
-			}
-			headers = append(headers, common.BytesToHash(block.Block.Hash()))
-		}
+	// for hasMore {
+	// s
+	// res, err := a.tmClient.Events(ctx, &coretypes.RequestEvents{
+	// 	Filter: &coretypes.EventFilter{Query: builtQuery},
+	// 	After:  cursor,
+	// })
+	eventCh, err := a.tmClient.Subscribe(ctx, "getBlockHeadersAfter", builtQuery)
+	if err != nil {
+		return nil, "", err
 	}
+
+	// read from res
+	res := <-eventCh
+
+	// hasMore = res.More
+	// cursor = res.Newest
+
+	// for _, item := range res.Events {
+	// 	// wrapper := EventItemDataWrapper{}
+	// 	// err := json.Unmarshal(item, &wrapper)
+	// 	// if err != nil {
+	// 	// 	return nil, "", err
+	// 	// }
+	// 	// block := tmtypes.EventDataNewBlock{}
+	// 	// err = json.Unmarshal(wrapper.Value, &block)
+	// 	// if err != nil {
+	// 	// 	return nil, "", err
+	// 	// }
+
+	// 	headers = append(headers, common.BytesToHash(block.Block.Hash()))
+	// }
+
+	// block := tmtypes.EventDataNewBlock{}
+	blockEvent, ok := res.Data.(tmtypes.EventDataNewBlock)
+	if !ok {
+		// TODO: soft error?
+		return nil, "", errors.New("unexpected event data type")
+	}
+
+	block := blockEvent.Block
+	headers = append(headers, common.BytesToHash(block.Hash()))
+
+	// }
 	return headers, cursor, nil
 }
 

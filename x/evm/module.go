@@ -268,7 +268,7 @@ func (am AppModule) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
 	if surplus.IsPositive() {
 		surplusUsei, surplusWei := state.SplitUseiWeiAmount(surplus.BigInt())
 		if surplusUsei.GT(sdkmath.ZeroInt()) {
-			if err := am.keeper.BankKeeper().AddCoins(ctx, am.keeper.AccountKeeper().GetModuleAddress(types.ModuleName), sdk.NewCoins(sdk.NewCoin(am.keeper.GetBaseDenom(ctx), surplusUsei)), true); err != nil {
+			if err := am.keeper.BankKeeper().AddCoins(ctx, am.keeper.AccountKeeper().GetModuleAddress(types.ModuleName), sdk.NewCoins(sdk.NewCoin(am.keeper.GetBaseDenom(ctx), surplusUsei))); err != nil {
 				ctx.Logger().Error("failed to send usei surplus of %s to EVM module account", surplusUsei)
 			}
 		}

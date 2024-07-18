@@ -2,6 +2,7 @@ package state
 
 import (
 	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/tracing"
@@ -115,7 +116,7 @@ func (s *DBImpl) Finalize() (surplus math.Int, err error) {
 }
 
 func (s *DBImpl) flushCtx(ctx sdk.Context) {
-	ctx.MultiStore().(sdk.CacheMultiStore).Write()
+	ctx.MultiStore().(storetypes.CacheMultiStore).Write()
 }
 
 // Backward-compatibility functions

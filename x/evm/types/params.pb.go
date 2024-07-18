@@ -5,7 +5,7 @@ package types
 
 import (
 	fmt "fmt"
-	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	github_com_cosmos_cosmos_sdk_math "cosmossdk.io/math" // TODO: I modified this manually right now (ik), regen ME!!
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	io "io"
@@ -30,9 +30,9 @@ type Params struct {
 	//   (gogoproto.moretags)   = "yaml:\"base_denom\"",
 	//   (gogoproto.jsontag) = "base_denom"
 	// ];
-	PriorityNormalizer github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,2,opt,name=priority_normalizer,json=priorityNormalizer,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"priority_normalizer" yaml:"priority_normalizer"`
-	BaseFeePerGas      github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,3,opt,name=base_fee_per_gas,json=baseFeePerGas,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"base_fee_per_gas" yaml:"base_fee_per_gas"`
-	MinimumFeePerGas   github_com_cosmos_cosmos_sdk_types.Dec `protobuf:"bytes,4,opt,name=minimum_fee_per_gas,json=minimumFeePerGas,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"minimum_fee_per_gas" yaml:"minimum_fee_per_gas"`
+	PriorityNormalizer github_com_cosmos_cosmos_sdk_math.LegacyDec `protobuf:"bytes,2,opt,name=priority_normalizer,json=priorityNormalizer,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"priority_normalizer" yaml:"priority_normalizer"`
+	BaseFeePerGas      github_com_cosmos_cosmos_sdk_math.LegacyDec `protobuf:"bytes,3,opt,name=base_fee_per_gas,json=baseFeePerGas,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"base_fee_per_gas" yaml:"base_fee_per_gas"`
+	MinimumFeePerGas   github_com_cosmos_cosmos_sdk_math.LegacyDec `protobuf:"bytes,4,opt,name=minimum_fee_per_gas,json=minimumFeePerGas,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"minimum_fee_per_gas" yaml:"minimum_fee_per_gas"`
 	// ChainConfig chain_config = 5 [(gogoproto.moretags) = "yaml:\"chain_config\"", (gogoproto.nullable) = false];
 	//   string chain_id = 6 [
 	//   (gogoproto.moretags)   = "yaml:\"chain_id\"",

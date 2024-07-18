@@ -8,6 +8,7 @@ import (
 	fmt "fmt"
 	types "github.com/cosmos/cosmos-sdk/codec/types"
 	github_com_cosmos_cosmos_sdk_types "github.com/cosmos/cosmos-sdk/types"
+	github_com_cosmos_cosmos_sdk_math "cosmossdk.io/math" // TODO: I modified this manually right now (ik), regen ME!!
 	types1 "github.com/cosmos/cosmos-sdk/types"
 	_ "github.com/gogo/protobuf/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -147,7 +148,7 @@ func (m *MsgEVMTransactionResponse) GetHash() string {
 
 type MsgInternalEVMCall struct {
 	Sender string                                  `protobuf:"bytes,1,opt,name=sender,proto3" json:"sender,omitempty"`
-	Value  *github_com_cosmos_cosmos_sdk_types.Int `protobuf:"bytes,2,opt,name=value,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"value,omitempty"`
+	Value  *github_com_cosmos_cosmos_sdk_math.Int `protobuf:"bytes,2,opt,name=value,proto3,customtype=cosmossdk.io/math.Int" json:"value,omitempty"`
 	To     string                                  `protobuf:"bytes,3,opt,name=to,proto3" json:"to,omitempty"`
 	Data   []byte                                  `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`
 }
@@ -2179,7 +2180,7 @@ func (m *MsgInternalEVMCall) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			var v github_com_cosmos_cosmos_sdk_types.Int
+			var v github_com_cosmos_cosmos_sdk_math.Int
 			m.Value = &v
 			if err := m.Value.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err

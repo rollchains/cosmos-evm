@@ -11,7 +11,6 @@ import (
 	"sort"
 	"sync"
 
-	sdkerrors "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -19,6 +18,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
@@ -256,7 +256,7 @@ func (k *Keeper) GetEVMTxDeferredInfo(ctx sdk.Context) (res []EvmTxDeferredInfo)
 			ctx.Logger().Error(fmt.Sprintf("getting invalid tx index in EVM deferred info: %d, num of txs: %d", txIdx, len(k.txResults)))
 			return true
 		}
-		if k.txResults[txIdx].Code == 0 || k.txResults[txIdx].Code == sdkerrors.ErrEVMVMError.ABCICode() || value.(*EvmTxDeferredInfo).Error != "" {
+		if k.txResults[txIdx].Code == 0 || k.txResults[txIdx].Code == sdkerrortypes.ErrEVMVMError.ABCICode() || value.(*EvmTxDeferredInfo).Error != "" {
 			res = append(res, *(value.(*EvmTxDeferredInfo)))
 		}
 		return true
@@ -265,7 +265,7 @@ func (k *Keeper) GetEVMTxDeferredInfo(ctx sdk.Context) (res []EvmTxDeferredInfo)
 	return
 }
 
-func (k *Keeper) AppendToEvmTxDeferredInfo(ctx sdk.Context, bloom ethtypes.Bloom, txHash common.Hash, surplus math.Int) {
+func (k *Keeper) AppendToEvmTxDeferredInfo(ctx sdk.Context, bloom ethtypes.Bloom, txHash common.Hash, surplus sdkmath.Int) {
 	k.deferredInfo.Store(ctx.TxIndex(), &EvmTxDeferredInfo{
 		TxIndx:  ctx.TxIndex(),
 		TxBloom: bloom,
@@ -433,7 +433,7 @@ func (k *Keeper) PrepareReplayedAddr(ctx sdk.Context, addr common.Address) {
 	store.Set(addr[:], a.Root[:])
 	if a.Balance != nil && a.Balance.Cmp(utils.Big0) != 0 {
 		usei, wei := state.SplitUseiWeiAmount(a.Balance)
-		err = k.BankKeeper().AddCoins(ctx, k.GetSeiAddressOrDefault(ctx, addr), sdk.NewCoins(sdk.NewCoin("usei", usei)), true)
+		err = k.BankKeeper().AddCoins(ctx, k.GetSeiAddressOrDefault(ctx, addr), sdk.NewCoins(sdk.NewCoin("usei", usei)))
 		if err != nil {
 			panic(err)
 		}

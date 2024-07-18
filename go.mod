@@ -7,6 +7,8 @@ replace (
 	// SDK v50 fix
 	cosmossdk.io/core => cosmossdk.io/core v0.11.0
 	cosmossdk.io/store => /home/reece/Desktop/Programming/Go/cosmos-sdk/store
+	// evm event support (rollchains/cometbft reece/evm-v50, built on v0.38.10)
+	github.com/cometbft/cometbft => /home/reece/Desktop/Programming/Go/cometbft
 
 	// initial matching upstream impl
 	github.com/confio/ics23/go => github.com/cosmos/cosmos-sdk/ics23/go v0.8.0
@@ -34,7 +36,7 @@ require (
 	github.com/CosmWasm/wasmd v0.50.0
 	github.com/CosmWasm/wasmvm v1.5.2
 	github.com/btcsuite/btcd v0.22.1
-	github.com/cometbft/cometbft v0.38.7
+	github.com/cometbft/cometbft v0.38.10
 	github.com/cosmos/cosmos-sdk v0.50.7
 	github.com/cosmos/gogoproto v1.4.12
 	github.com/cosmos/ibc-go/v8 v8.0.0
@@ -162,6 +164,7 @@ require (
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v1.0.2 // indirect
+	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/hdevalence/ed25519consensus v0.1.0 // indirect
@@ -179,7 +182,6 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/lib/pq v1.10.7 // indirect
-	github.com/libp2p/go-buffer-pool v0.1.0 // indirect
 	github.com/linxGnu/grocksdb v1.8.14 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect

@@ -10,22 +10,15 @@ import (
 type EVMRouterDecorator struct {
 	defaultAnteHandler sdk.AnteHandler
 	evmAnteHandler     sdk.AnteHandler
-
-	defaultAnteDepGenerator sdk.AnteDepGenerator
-	evmAnteDepGenerator     sdk.AnteDepGenerator
 }
 
 func NewEVMRouterDecorator(
 	defaultAnteHandler sdk.AnteHandler,
 	evmAnteHandler sdk.AnteHandler,
-	defaultAnteDepGenerator sdk.AnteDepGenerator,
-	evmAnteDepGenerator sdk.AnteDepGenerator,
 ) *EVMRouterDecorator {
 	return &EVMRouterDecorator{
-		defaultAnteHandler:      defaultAnteHandler,
-		evmAnteHandler:          evmAnteHandler,
-		defaultAnteDepGenerator: defaultAnteDepGenerator,
-		evmAnteDepGenerator:     evmAnteDepGenerator,
+		defaultAnteHandler: defaultAnteHandler,
+		evmAnteHandler:     evmAnteHandler,
 	}
 }
 
@@ -37,16 +30,6 @@ func (r EVMRouterDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool
 	}
 
 	return r.defaultAnteHandler(ctx, tx, simulate)
-}
-
-func (r EVMRouterDecorator) AnteDeps(tx sdk.Tx, txIndex int) (err error) {
-	if isEVM, err := IsEVMMessage(tx); err != nil {
-		return err
-	} else if isEVM {
-		return r.evmAnteDepGenerator(txDeps, tx, txIndex)
-	}
-
-	return r.defaultAnteDepGenerator(txDeps, tx, txIndex)
 }
 
 func IsEVMMessage(tx sdk.Tx) (bool, error) {

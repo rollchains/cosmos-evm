@@ -1,16 +1,18 @@
 package ante
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 
-	"cosmossdk.io/errors"
+	sdkerrors "cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdktypeerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	accountkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authsigning "github.com/cosmos/cosmos-sdk/x/auth/signing"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -71,12 +73,12 @@ func (p *EVMPreprocessDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate
 	isAssociateTx := derived.IsAssociate
 	_, isAssociated := p.evmKeeper.GetEVMAddress(ctx, seiAddr)
 	if isAssociateTx && isAssociated {
-		return ctx, errors.Wrap(sdkerrors.ErrInvalidRequest, "account already has association set")
+		return ctx, sdkerrors.Wrap(sdktypeerrors.ErrInvalidRequest, "account already has association set")
 	} else if isAssociateTx {
 		// check if the account has enough balance (without charging)
 		if !p.IsAccountBalancePositive(ctx, seiAddr, evmAddr) {
 			// metrics.IncrementAssociationError("associate_tx_insufficient_funds", evmtypes.NewAssociationMissingErr(seiAddr.String()))
-			return ctx, errors.Wrap(sdkerrors.ErrInsufficientFunds, "account needs to have at least 1 wei to force association")
+			return ctx, sdkerrors.Wrap(sdktypeerrors.ErrInsufficientFunds, "account needs to have at least 1 wei to force association")
 		}
 		if err := p.AssociateAddresses(ctx, seiAddr, evmAddr, pubkey); err != nil {
 			return ctx, err
@@ -127,7 +129,7 @@ func Preprocess(ctx sdk.Context, msgEVMTransaction *evmtypes.MsgEVMTransaction) 
 	if msgEVMTransaction.Derived != nil {
 		if msgEVMTransaction.Derived.PubKey == nil {
 			// this means the message has `Derived` set from the outside, in which case we should reject
-			return sdkerrors.ErrInvalidPubKey
+			return sdktypeerrors.ErrInvalidPubKey
 		}
 		// already preprocessed
 		return nil
@@ -185,62 +187,6 @@ func Preprocess(ctx sdk.Context, msgEVMTransaction *evmtypes.MsgEVMTransaction) 
 		Version:       version,
 		IsAssociate:   false,
 	}
-	return nil
-}
-
-// TODO: I do not think this applies to normal networks
-func (p *EVMPreprocessDecorator) AnteDeps(tx sdk.Tx, txIndex int, next sdk.AnteDepGenerator) (err error) {
-	panic("p *EVMPreprocessDecorator) AnteDeps implement me")
-	// msg := evmtypes.MustGetEVMTransactionMessage(tx)
-	// return next(append(txDeps, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_READ,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_EVM_S2E,
-	// 	IdentifierTemplate: hex.EncodeToString(evmtypes.SeiAddressToEVMAddressKey(msg.Derived.SenderSeiAddr)),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_WRITE,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_EVM_S2E,
-	// 	IdentifierTemplate: hex.EncodeToString(evmtypes.SeiAddressToEVMAddressKey(msg.Derived.SenderSeiAddr)),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_WRITE,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_EVM_E2S,
-	// 	IdentifierTemplate: hex.EncodeToString(evmtypes.EVMAddressToSeiAddressKey(msg.Derived.SenderEVMAddr)),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_READ,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
-	// 	IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(msg.Derived.SenderSeiAddr)),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_WRITE,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
-	// 	IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(msg.Derived.SenderSeiAddr)),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_READ,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
-	// 	IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(msg.Derived.SenderEVMAddr[:])),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_WRITE,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_BANK_BALANCES,
-	// 	IdentifierTemplate: hex.EncodeToString(banktypes.CreateAccountBalancesPrefix(msg.Derived.SenderEVMAddr[:])),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_READ,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_AUTH_ADDRESS_STORE,
-	// 	IdentifierTemplate: hex.EncodeToString(authtypes.AddressStoreKey(msg.Derived.SenderSeiAddr)),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_WRITE,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_AUTH_ADDRESS_STORE,
-	// 	IdentifierTemplate: hex.EncodeToString(authtypes.AddressStoreKey(msg.Derived.SenderSeiAddr)),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_READ,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_AUTH_ADDRESS_STORE,
-	// 	IdentifierTemplate: hex.EncodeToString(authtypes.AddressStoreKey(msg.Derived.SenderEVMAddr[:])),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_WRITE,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_AUTH_ADDRESS_STORE,
-	// 	IdentifierTemplate: hex.EncodeToString(authtypes.AddressStoreKey(msg.Derived.SenderEVMAddr[:])),
-	// }, sdkacltypes.AccessOperation{
-	// 	AccessType:         sdkacltypes.AccessType_READ,
-	// 	ResourceType:       sdkacltypes.ResourceType_KV_EVM_NONCE,
-	// 	IdentifierTemplate: hex.EncodeToString(append(evmtypes.NonceKeyPrefix, msg.Derived.SenderEVMAddr[:]...)),
-	// }), tx, txIndex)
 	return nil
 }
 
@@ -343,7 +289,7 @@ func MigrateBalance(ctx sdk.Context, evmKeeper *evmkeeper.Keeper, evmAddr common
 	}
 	castAddrWei := evmKeeper.BankKeeper().GetWeiBalance(ctx, castAddr)
 	if !castAddrWei.IsZero() {
-		if err := evmKeeper.BankKeeper().SendCoinsAndWei(ctx, castAddr, seiAddr, sdk.ZeroInt(), castAddrWei); err != nil {
+		if err := evmKeeper.BankKeeper().SendCoinsAndWei(ctx, castAddr, seiAddr, sdkmath.ZeroInt(), castAddrWei); err != nil {
 			return err
 		}
 	}
@@ -357,49 +303,54 @@ func MigrateBalance(ctx sdk.Context, evmKeeper *evmkeeper.Keeper, evmAddr common
 func (p *EVMAddressDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	sigTx, ok := tx.(authsigning.SigVerifiableTx)
 	if !ok {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrTxDecode, "invalid tx type")
+		return ctx, sdkerrors.Wrap(sdktypeerrors.ErrTxDecode, "invalid tx type")
 	}
-	signers := sigTx.GetSigners()
+	signers, err := sigTx.GetSigners()
+	if err != nil {
+		return ctx, sdkerrors.Wrap(sdktypeerrors.ErrInvalidRequest, "failed to get signers")
+	}
+
 	for _, signer := range signers {
+		accAddr := sdk.AccAddress(signer)
+
 		if evmAddr, associated := p.evmKeeper.GetEVMAddress(ctx, signer); associated {
 			ctx.EventManager().EmitEvent(sdk.NewEvent(evmtypes.EventTypeSigner,
 				sdk.NewAttribute(evmtypes.AttributeKeyEvmAddress, evmAddr.Hex()),
-				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, signer.String())))
+				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, accAddr.String())))
 			continue
 		}
 		acc := p.accountKeeper.GetAccount(ctx, signer)
 		if acc.GetPubKey() == nil {
-			ctx.Logger().Error(fmt.Sprintf("missing pubkey for %s", signer.String()))
+			ctx.Logger().Error(fmt.Sprintf("missing pubkey for %s", accAddr.String()))
 			ctx.EventManager().EmitEvent(sdk.NewEvent(evmtypes.EventTypeSigner,
-				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, signer.String())))
+				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, accAddr.String())))
 			continue
 		}
 		pk, err := btcec.ParsePubKey(acc.GetPubKey().Bytes(), btcec.S256())
 		if err != nil {
 			ctx.Logger().Debug(fmt.Sprintf("failed to parse pubkey for %s, likely due to the fact that it isn't on secp256k1 curve", acc.GetPubKey()), "err", err)
 			ctx.EventManager().EmitEvent(sdk.NewEvent(evmtypes.EventTypeSigner,
-				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, signer.String())))
+				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, accAddr.String())))
 			continue
 		}
 		evmAddr, err := pubkeyToEVMAddress(pk.SerializeUncompressed())
 		if err != nil {
 			ctx.Logger().Error(fmt.Sprintf("failed to get EVM address from pubkey due to %s", err))
 			ctx.EventManager().EmitEvent(sdk.NewEvent(evmtypes.EventTypeSigner,
-				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, signer.String())))
+				sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, accAddr.String())))
 			continue
 		}
 		ctx.EventManager().EmitEvent(sdk.NewEvent(evmtypes.EventTypeSigner,
 			sdk.NewAttribute(evmtypes.AttributeKeyEvmAddress, evmAddr.Hex()),
-			sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, signer.String())))
+			sdk.NewAttribute(evmtypes.AttributeKeySeiAddress, accAddr.String())))
 		p.evmKeeper.SetAddressMapping(ctx, signer, evmAddr)
 		if err := MigrateBalance(ctx, p.evmKeeper, evmAddr, signer); err != nil {
 			ctx.Logger().Error(fmt.Sprintf("failed to migrate EVM address balance (%s) %s", evmAddr.Hex(), err))
 			return ctx, err
 		}
 		if evmtypes.IsTxMsgAssociate(tx) {
-			// check if there is non-zero balance
 			if !p.evmKeeper.BankKeeper().GetBalance(ctx, signer, sdk.MustGetBaseDenom()).IsPositive() && !p.evmKeeper.BankKeeper().GetWeiBalance(ctx, signer).IsPositive() {
-				return ctx, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "account needs to have at least 1 wei to force association")
+				return ctx, sdkerrors.Wrap(sdktypeerrors.ErrInsufficientFunds, "account needs to have at least 1 wei to force association")
 			}
 		}
 	}

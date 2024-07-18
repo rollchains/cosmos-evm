@@ -177,6 +177,7 @@ func (t *AssociationAPI) GetEvmTx(ctx context.Context, cosmosHash string) (resul
 	if err != nil {
 		return "", err
 	}
+	// TODO: CometBFT fork. tbh Comet should have a map[string]any{} where we can namespace custom logic on top of this yea? then see if it has and grab info if of type.
 	if txResponse.TxResult.EvmTxInfo == nil {
 		return "", fmt.Errorf("transaction not found")
 	}

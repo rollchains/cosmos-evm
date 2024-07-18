@@ -6,7 +6,6 @@ import (
 	"time"
 
 	sdkerrors "cosmossdk.io/errors"
-	rpcclient "github.com/cometbft/cometbft/rpc/client"
 	"github.com/cosmos/cosmos-sdk/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -20,7 +19,7 @@ import (
 )
 
 type SendAPI struct {
-	tmClient       rpcclient.Client
+	tmClient       client.CometRPC
 	txConfig       client.TxConfig
 	sendConfig     *SendConfig
 	keeper         *keeper.Keeper
@@ -34,7 +33,7 @@ type SendConfig struct {
 	slow bool
 }
 
-func NewSendAPI(tmClient rpcclient.Client, txConfig client.TxConfig, sendConfig *SendConfig, k *keeper.Keeper, ctxProvider func(int64) sdk.Context, homeDir string, simulateConfig *SimulateConfig, connectionType ConnectionType) *SendAPI {
+func NewSendAPI(tmClient client.CometRPC, txConfig client.TxConfig, sendConfig *SendConfig, k *keeper.Keeper, ctxProvider func(int64) sdk.Context, homeDir string, simulateConfig *SimulateConfig, connectionType ConnectionType) *SendAPI {
 	return &SendAPI{
 		tmClient:       tmClient,
 		txConfig:       txConfig,

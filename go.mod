@@ -16,7 +16,6 @@ replace (
 	github.com/cosmos/cosmos-sdk => /home/reece/Desktop/Programming/Go/cosmos-sdk
 
 	// ---
-	// Why?
 	github.com/ethereum/go-ethereum => github.com/sei-protocol/go-ethereum v1.13.5-sei-22
 	// breaks SDK app.toml parsing in ictest w/ SDK
 	github.com/spf13/viper => github.com/spf13/viper v1.17.0

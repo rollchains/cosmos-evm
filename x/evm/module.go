@@ -104,30 +104,30 @@ type AppModule struct {
 
 // IsAppModule implements module.AppModule.
 func (am AppModule) IsAppModule() {
-	panic("unimplemented")
+	// panic("unimplemented")
 }
 
 // IsOnePerModuleType implements module.AppModule.
 func (am AppModule) IsOnePerModuleType() {
-	panic("unimplemented")
+	// panic("unimplemented")
 }
 
 // RegisterGRPCGatewayRoutes implements module.AppModule.
 // Subtle: this method shadows the method (AppModuleBasic).RegisterGRPCGatewayRoutes of AppModule.AppModuleBasic.
 func (am AppModule) RegisterGRPCGatewayRoutes(client.Context, *runtime.ServeMux) {
-	panic("unimplemented")
+	// panic("unimplemented") // TODO:
 }
 
 // RegisterInterfaces implements module.AppModule.
 // Subtle: this method shadows the method (AppModuleBasic).RegisterInterfaces of AppModule.AppModuleBasic.
-func (am AppModule) RegisterInterfaces(cdctypes.InterfaceRegistry) {
-	panic("unimplemented")
+func (am AppModule) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
 }
 
 // RegisterLegacyAminoCodec implements module.AppModule.
 // Subtle: this method shadows the method (AppModuleBasic).RegisterLegacyAminoCodec of AppModule.AppModuleBasic.
 func (am AppModule) RegisterLegacyAminoCodec(*codec.LegacyAmino) {
-	panic("unimplemented")
+	// panic("unimplemented")
 }
 
 func NewAppModule(

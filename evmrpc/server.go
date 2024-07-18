@@ -26,8 +26,7 @@ type EVMServer interface {
 func NewEVMHTTPServer(
 	logger log.Logger,
 	config Config,
-	// tmClient rpcclient.Client,
-	tmClient client.CometRPC,
+	tmClient rpcclient.Client,
 	k *keeper.Keeper,
 	ctxProvider func(int64) sdk.Context,
 	txConfig client.TxConfig,

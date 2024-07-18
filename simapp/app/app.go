@@ -60,6 +60,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/rollchains/simapp/app/decorators"
 	"github.com/spf13/cast"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
@@ -135,9 +136,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 
+	cmtstate "github.com/cometbft/cometbft/proto/tendermint/state"
 	ethrpc "github.com/ethereum/go-ethereum/rpc"
-	"github.com/sei-protocol/sei-chain/app/antedecorators"
 	"github.com/sei-protocol/sei-chain/evmrpc"
+	"github.com/sei-protocol/sei-chain/utils/metrics"
+	"github.com/sei-protocol/sei-chain/x/evm"
 	"github.com/sei-protocol/sei-chain/x/evm/blocktest"
 	evmkeeper "github.com/sei-protocol/sei-chain/x/evm/keeper"
 	"github.com/sei-protocol/sei-chain/x/evm/querier"
@@ -332,7 +335,6 @@ func NewChainApp(
 	bApp.SetCommitMultiStoreTracer(traceStore)
 	bApp.SetVersion(version.Version)
 	bApp.SetInterfaceRegistry(interfaceRegistry)
-
 	bApp.SetTxEncoder(txConfig.TxEncoder())
 
 	keys := storetypes.NewKVStoreKeys(
@@ -772,6 +774,7 @@ func NewChainApp(
 		ibctm.NewAppModule(),
 		crisis.NewAppModule(app.CrisisKeeper, skipGenesisInvariants, app.GetSubspace(crisistypes.ModuleName)),
 		// custom
+		evm.NewAppModule(app.appCodec, &app.EvmKeeper),
 	)
 
 	// BasicModuleManager defines the module BasicManager is in charge of setting up basic,
@@ -809,6 +812,7 @@ func NewChainApp(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
+		evmtypes.ModuleName,
 	)
 
 	app.ModuleManager.SetOrderEndBlockers(
@@ -824,6 +828,7 @@ func NewChainApp(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
+		evmtypes.ModuleName,
 	)
 
 	// NOTE: The genutils module must occur after staking so that pools are
@@ -861,6 +866,7 @@ func NewChainApp(
 		ibcexported.ModuleName,
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
+		evmtypes.StoreKey,
 	}
 	app.ModuleManager.SetOrderInitGenesis(genesisModuleOrder...)
 	app.ModuleManager.SetOrderExportGenesis(genesisModuleOrder...)
@@ -924,12 +930,18 @@ func NewChainApp(
 			IBCKeeper:     app.IBCKeeper,
 			CircuitKeeper: &app.CircuitKeeper,
 			EVMKeeper:     &app.EvmKeeper,
+			LatestCtxGetter: func() sdk.Context {
+				return app.GetCheckCtx()
+			},
 		},
 	)
 	if err != nil {
 		panic(fmt.Errorf("failed to create AnteHandler: %s", err))
 	}
 	app.SetAnteHandler(anteHandler)
+
+	// app.SetPrepareProposal() // TODO: ?
+	app.SetProcessProposal(app.ProcessProposalHandler)
 
 	// must be before Loading version
 	// requires the snapshot store to be created and registered as a BaseAppOption
@@ -1216,7 +1228,7 @@ func (app *ChainApp) RegisterTendermintService(clientCtx client.Context) {
 	}
 
 	if app.evmRPCConfig.HTTPEnabled {
-		evmHTTPServer, err := evmrpc.NewEVMHTTPServer(app.Logger(), app.evmRPCConfig, clientCtx.Client, &app.EvmKeeper, ctxProvider, app.encodingConfig.TxConfig, DefaultNodeHome)
+		evmHTTPServer, err := evmrpc.NewEVMHTTPServer(app.Logger(), app.evmRPCConfig, clientCtx.Client, &app.EvmKeeper, ctxProvider, app.txConfig, DefaultNodeHome)
 		if err != nil {
 			panic(err)
 		}
@@ -1226,7 +1238,7 @@ func (app *ChainApp) RegisterTendermintService(clientCtx client.Context) {
 	}
 
 	if app.evmRPCConfig.WSEnabled {
-		evmWSServer, err := evmrpc.NewEVMWebSocketServer(app.Logger(), app.evmRPCConfig, clientCtx.Client, &app.EvmKeeper, ctxProvider, app.encodingConfig.TxConfig, DefaultNodeHome)
+		evmWSServer, err := evmrpc.NewEVMWebSocketServer(app.Logger(), app.evmRPCConfig, clientCtx.Client, &app.EvmKeeper, ctxProvider, app.txConfig, DefaultNodeHome)
 		if err != nil {
 			panic(err)
 		}
@@ -1265,10 +1277,10 @@ func BlockedAddresses() map[string]bool {
 	return modAccAddrs
 }
 
-func (app *App) checkTotalBlockGasWanted(ctx sdk.Context, txs [][]byte) bool {
+func (app *ChainApp) checkTotalBlockGasWanted(ctx sdk.Context, txs [][]byte) bool {
 	totalGasWanted := uint64(0)
 	for _, tx := range txs {
-		decoded, err := app.txDecoder(tx)
+		decoded, err := app.txConfig.TxDecoder()(tx)
 		if err != nil {
 			// such tx will not be processed and thus won't consume gas. Skipping
 			continue
@@ -1278,7 +1290,7 @@ func (app *App) checkTotalBlockGasWanted(ctx sdk.Context, txs [][]byte) bool {
 			// such tx will not be processed and thus won't consume gas. Skipping
 			continue
 		}
-		isGasless, err := antedecorators.IsTxGasless(decoded, ctx, app.OracleKeeper, &app.EvmKeeper)
+		isGasless, err := decorators.IsTxGasless(decoded, ctx, &app.EvmKeeper)
 		if err != nil {
 			ctx.Logger().Error("error checking if tx is gasless", "error", err)
 			continue
@@ -1293,6 +1305,59 @@ func (app *App) checkTotalBlockGasWanted(ctx sdk.Context, txs [][]byte) bool {
 		}
 	}
 	return true
+}
+
+type OptimisticProcessingInfo struct {
+	Height     int64
+	Hash       []byte
+	Aborted    bool
+	Completion chan struct{}
+	// result fields
+	Events       []abci.Event
+	TxRes        []*abci.ExecTxResult
+	EndBlockResp cmtstate.ResponseEndBlock
+}
+
+func (app *ChainApp) ProcessProposalHandler(ctx sdk.Context, req *abci.RequestProcessProposal) (*abci.ResponseProcessProposal, error) {
+	// TODO: this check decodes transactions which is redone in subsequent processing. We might be able to optimize performance
+	// by recording the decoding results and avoid decoding again later on.
+
+	if !app.checkTotalBlockGasWanted(ctx, req.Txs) {
+		metrics.IncrFailedTotalGasWantedCheck(string(req.GetProposerAddress()))
+		return &abci.ResponseProcessProposal{
+			Status: abci.ResponseProcessProposal_REJECT,
+		}, nil
+	}
+	// if app.optimisticProcessingInfo == nil {
+	// 	completionSignal := make(chan struct{}, 1)
+	// 	optimisticProcessingInfo := &OptimisticProcessingInfo{
+	// 		Height:     req.Height,
+	// 		Hash:       req.Hash,
+	// 		Completion: completionSignal,
+	// 	}
+	// 	app.optimisticProcessingInfo = optimisticProcessingInfo
+
+	// 	plan, found := app.UpgradeKeeper.GetUpgradePlan(ctx)
+	// 	if found && plan.ShouldExecute(ctx) {
+	// 		app.Logger().Info(fmt.Sprintf("Potential upgrade planned for height=%d skipping optimistic processing", plan.Height))
+	// 		app.optimisticProcessingInfo.Aborted = true
+	// 		app.optimisticProcessingInfo.Completion <- struct{}{}
+	// 	} else {
+	// 		go func() {
+	// 			ctx = ctx.WithContext(app.decorateProcessProposalContextWithDexMemState(ctx.Context()))
+	// 			events, txResults, endBlockResp, _ := app.ProcessBlock(ctx, req.Txs, req, req.ProposedLastCommit)
+	// 			optimisticProcessingInfo.Events = events
+	// 			optimisticProcessingInfo.TxRes = txResults
+	// 			optimisticProcessingInfo.EndBlockResp = endBlockResp
+	// 			optimisticProcessingInfo.Completion <- struct{}{}
+	// 		}()
+	// 	}
+	// } else if !bytes.Equal(app.optimisticProcessingInfo.Hash, req.Hash) {
+	// 	app.optimisticProcessingInfo.Aborted = true
+	// }
+	return &abci.ResponseProcessProposal{
+		Status: abci.ResponseProcessProposal_ACCEPT,
+	}, nil
 }
 
 func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino, key, tkey storetypes.StoreKey) paramskeeper.Keeper {

@@ -4,7 +4,7 @@ import (
 	"errors"
 	fmt "fmt"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"gopkg.in/yaml.v2"
 )
@@ -17,13 +17,13 @@ var (
 	KeyWhitelistedCwCodeHashesForDelegateCall = []byte("KeyWhitelistedCwCodeHashesForDelegateCall")
 )
 
-var DefaultPriorityNormalizer = sdk.NewDec(1)
+var DefaultPriorityNormalizer = math.LegacyNewDec(1)
 
 // DefaultBaseFeePerGas determines how much usei per gas spent is
 // burnt rather than go to validators (similar to base fee on
 // Ethereum).
-var DefaultBaseFeePerGas = sdk.NewDec(0)
-var DefaultMinFeePerGas = sdk.NewDec(1000000000)
+var DefaultBaseFeePerGas = math.LegacyNewDec(0)
+var DefaultMinFeePerGas = math.LegacyNewDec(1000000000)
 
 var DefaultWhitelistedCwCodeHashesForDelegateCall = generateDefaultWhitelistedCwCodeHashesForDelegateCall()
 
@@ -73,7 +73,7 @@ func (p Params) String() string {
 }
 
 func validatePriorityNormalizer(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -86,7 +86,7 @@ func validatePriorityNormalizer(i interface{}) error {
 }
 
 func validateBaseFeePerGas(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}
@@ -99,7 +99,7 @@ func validateBaseFeePerGas(i interface{}) error {
 }
 
 func validateMinFeePerGas(i interface{}) error {
-	v, ok := i.(sdk.Dec)
+	v, ok := i.(math.LegacyDec)
 	if !ok {
 		return fmt.Errorf("invalid parameter type: %T", i)
 	}

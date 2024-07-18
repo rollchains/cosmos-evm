@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -15,7 +17,6 @@ import (
 	pcommon "github.com/sei-protocol/sei-chain/precompiles/common"
 	"github.com/sei-protocol/sei-chain/utils"
 	"github.com/sei-protocol/sei-chain/x/evm/state"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 const (
@@ -199,7 +200,7 @@ func (p Precompile) send(ctx sdk.Context, caller common.Address, method *abi.Met
 		return nil, err
 	}
 
-	if err := p.bankKeeper.SendCoins(ctx, senderSeiAddr, receiverSeiAddr, sdk.NewCoins(sdk.NewCoin(denom, sdk.NewIntFromBigInt(amount)))); err != nil {
+	if err := p.bankKeeper.SendCoins(ctx, senderSeiAddr, receiverSeiAddr, sdk.NewCoins(sdk.NewCoin(denom, math.NewIntFromBigInt(amount)))); err != nil {
 		return nil, err
 	}
 

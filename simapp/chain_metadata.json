@@ -1,0 +1,26 @@
+{
+  "token": {
+    "display_denom": "TOKEN",
+    "denom": "token",
+    "decimals": 6,
+    "inflation": "0.10",
+    "initial_supply": "1000000000000000000",
+    "max_supply": "1000000000000000000"
+  },
+  "project": {
+    "github": "github.com/rollchains/simapp",
+    "target_launch_date": "2024-07-18T20:06:00Z",
+    "logo": "https://example.com/logo.png",
+    "website": "https://example.com",
+    "description": "A short description of your project",
+    "short_description": "A short description of your project",
+    "whitepaper": "https://example.com/whitepaper.pdf",
+    "contact": {
+      "email": "",
+      "telegram": "",
+      "twitter": "",
+      "name": "",
+      "discord": ""
+    }
+  }
+}

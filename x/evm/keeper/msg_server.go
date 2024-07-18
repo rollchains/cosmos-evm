@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"runtime/debug"
-	"strings"
 
-	"github.com/armon/go-metrics"
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	occtypes "github.com/cosmos/cosmos-sdk/types/occ"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -22,6 +19,7 @@ import (
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/hashicorp/go-metrics"
 	"github.com/sei-protocol/sei-chain/utils"
 	"github.com/sei-protocol/sei-chain/x/evm/artifacts/erc20"
 	"github.com/sei-protocol/sei-chain/x/evm/artifacts/erc721"
@@ -55,7 +53,7 @@ func (server msgServer) EVMTransaction(goCtx context.Context, msg *types.MsgEVMT
 	// 	3. At the beginning of message server (here), gas meter is set to infinite again, because EVM internal logic will then take over and manage out-of-gas scenarios.
 	// 	4. At the end of message server, gas consumed by EVM is adjusted to Sei's unit and counted in the original gas meter, because that original gas meter will be used to count towards block gas after message server returns
 	originalGasMeter := ctx.GasMeter()
-	ctx = ctx.WithGasMeter(sdk.NewInfiniteGasMeterWithMultiplier(ctx))
+	ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeterWithMultiplier(ctx.GasMeter()))
 
 	stateDB := state.NewDBImpl(ctx, &server, false)
 	tx, _ := msg.AsTransaction()
@@ -64,11 +62,11 @@ func (server msgServer) EVMTransaction(goCtx context.Context, msg *types.MsgEVMT
 
 	defer func() {
 		if pe := recover(); pe != nil {
-			if !strings.Contains(fmt.Sprintf("%s", pe), occtypes.ErrReadEstimate.Error()) {
-				debug.PrintStack()
-				ctx.Logger().Error(fmt.Sprintf("EVM PANIC: %s", pe))
-				telemetry.IncrCounter(1, types.ModuleName, "panics")
-			}
+			// if !strings.Contains(fmt.Sprintf("%s", pe), occtypes.ErrReadEstimate.Error()) {
+			// 	debug.PrintStack()
+			// 	ctx.Logger().Error(fmt.Sprintf("EVM PANIC: %s", pe))
+			// 	telemetry.IncrCounter(1, types.ModuleName, "panics")
+			// }
 			server.AppendErrorToEvmTxDeferredInfo(ctx, tx.Hash(), fmt.Sprintf("%s", pe))
 
 			panic(pe)

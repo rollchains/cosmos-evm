@@ -11,15 +11,19 @@ import (
 	"sort"
 	"sync"
 
+	sdkmath "cosmossdk.io/math"
+	"cosmossdk.io/store/prefix"
+	storetypes "cosmossdk.io/store/types"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	abci "github.com/cometbft/cometbft/abci/types"
+	tmtypes "github.com/cometbft/cometbft/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrortypes "github.com/cosmos/cosmos-sdk/types/errors"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v3/modules/apps/transfer/keeper"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/misc/eip4844"
@@ -30,8 +34,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/tests"
-	abci "github.com/tendermint/tendermint/abci/types"
-	tmtypes "github.com/tendermint/tendermint/types"
 
 	"github.com/sei-protocol/sei-chain/utils"
 	"github.com/sei-protocol/sei-chain/x/evm/blocktest"
@@ -42,8 +44,8 @@ import (
 )
 
 type Keeper struct {
-	storeKey    sdk.StoreKey
-	memStoreKey sdk.StoreKey
+	storeKey    storetypes.StoreKey
+	memStoreKey storetypes.StoreKey
 	Paramstore  paramtypes.Subspace
 
 	deferredInfo *sync.Map
@@ -83,7 +85,7 @@ type EvmTxDeferredInfo struct {
 	TxIndx  int
 	TxHash  common.Hash
 	TxBloom ethtypes.Bloom
-	Surplus sdk.Int
+	Surplus sdkmath.Int
 	Error   string
 }
 
@@ -116,7 +118,7 @@ func (ctx *ReplayChainContext) GetHeader(hash common.Hash, number uint64) *ethty
 }
 
 func NewKeeper(
-	storeKey sdk.StoreKey, memStoreKey sdk.StoreKey, paramstore paramtypes.Subspace,
+	storeKey storetypes.StoreKey, memStoreKey storetypes.StoreKey, paramstore paramtypes.Subspace,
 	bankKeeper bankkeeper.Keeper, accountKeeper *authkeeper.AccountKeeper, stakingKeeper *stakingkeeper.Keeper,
 	transferKeeper ibctransferkeeper.Keeper, wasmKeeper *wasmkeeper.PermissionedKeeper, wasmViewKeeper *wasmkeeper.Keeper) *Keeper {
 	if !paramstore.HasKeyTable() {
@@ -153,7 +155,7 @@ func (k *Keeper) WasmKeeper() *wasmkeeper.PermissionedKeeper {
 	return k.wasmKeeper
 }
 
-func (k *Keeper) GetStoreKey() sdk.StoreKey {
+func (k *Keeper) GetStoreKey() storetypes.StoreKey {
 	return k.storeKey
 }
 
@@ -167,15 +169,20 @@ func (k *Keeper) IterateAll(ctx sdk.Context, pref []byte, cb func(key, val []byt
 	}
 }
 
-func (k *Keeper) PrefixStore(ctx sdk.Context, pref []byte) sdk.KVStore {
+func (k *Keeper) PrefixStore(ctx sdk.Context, pref []byte) storetypes.KVStore {
 	store := ctx.KVStore(k.GetStoreKey())
 	return prefix.NewStore(store, pref)
 }
 
 func (k *Keeper) PurgePrefix(ctx sdk.Context, pref []byte) {
 	store := k.PrefixStore(ctx, pref)
-	if err := store.DeleteAll(nil, nil); err != nil {
-		panic(err)
+	// if err := store.DeleteAll(nil, nil); err != nil {
+	// 	panic(err)
+	// }
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		store.Delete(iter.Key())
 	}
 }
 
@@ -249,7 +256,7 @@ func (k *Keeper) GetEVMTxDeferredInfo(ctx sdk.Context) (res []EvmTxDeferredInfo)
 			ctx.Logger().Error(fmt.Sprintf("getting invalid tx index in EVM deferred info: %d, num of txs: %d", txIdx, len(k.txResults)))
 			return true
 		}
-		if k.txResults[txIdx].Code == 0 || k.txResults[txIdx].Code == sdkerrors.ErrEVMVMError.ABCICode() || value.(*EvmTxDeferredInfo).Error != "" {
+		if k.txResults[txIdx].Code == 0 || k.txResults[txIdx].Code == sdkerrortypes.ErrEVMVMError.ABCICode() || value.(*EvmTxDeferredInfo).Error != "" {
 			res = append(res, *(value.(*EvmTxDeferredInfo)))
 		}
 		return true
@@ -258,7 +265,7 @@ func (k *Keeper) GetEVMTxDeferredInfo(ctx sdk.Context) (res []EvmTxDeferredInfo)
 	return
 }
 
-func (k *Keeper) AppendToEvmTxDeferredInfo(ctx sdk.Context, bloom ethtypes.Bloom, txHash common.Hash, surplus sdk.Int) {
+func (k *Keeper) AppendToEvmTxDeferredInfo(ctx sdk.Context, bloom ethtypes.Bloom, txHash common.Hash, surplus sdkmath.Int) {
 	k.deferredInfo.Store(ctx.TxIndex(), &EvmTxDeferredInfo{
 		TxIndx:  ctx.TxIndex(),
 		TxBloom: bloom,
@@ -280,8 +287,8 @@ func (k *Keeper) ClearEVMTxDeferredInfo() {
 }
 
 func (k *Keeper) getHistoricalHash(ctx sdk.Context, h int64) common.Hash {
-	histInfo, found := k.stakingKeeper.GetHistoricalInfo(ctx, h)
-	if !found {
+	histInfo, err := k.stakingKeeper.GetHistoricalInfo(ctx, h)
+	if err != nil {
 		// too old, already pruned
 		return common.Hash{}
 	}
@@ -426,7 +433,7 @@ func (k *Keeper) PrepareReplayedAddr(ctx sdk.Context, addr common.Address) {
 	store.Set(addr[:], a.Root[:])
 	if a.Balance != nil && a.Balance.Cmp(utils.Big0) != 0 {
 		usei, wei := state.SplitUseiWeiAmount(a.Balance)
-		err = k.BankKeeper().AddCoins(ctx, k.GetSeiAddressOrDefault(ctx, addr), sdk.NewCoins(sdk.NewCoin("usei", usei)), true)
+		err = k.BankKeeper().AddCoins(ctx, k.GetSeiAddressOrDefault(ctx, addr), sdk.NewCoins(sdk.NewCoin("usei", usei)))
 		if err != nil {
 			panic(err)
 		}

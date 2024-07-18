@@ -4,13 +4,14 @@ import (
 	"encoding/binary"
 	"math/big"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // UseiToSweiMultiplier Fields that were denominated in usei will be converted to swei (1usei = 10^12swei)
 // for existing Ethereum application (which assumes 18 decimal points) to display properly.
 var UseiToSweiMultiplier = big.NewInt(1_000_000_000_000)
-var SdkUseiToSweiMultiplier = sdk.NewIntFromBigInt(UseiToSweiMultiplier)
+var SdkUseiToSweiMultiplier = math.NewIntFromBigInt(UseiToSweiMultiplier)
 
 var CoinbaseAddressPrefix = []byte("evm_coinbase")
 
@@ -20,8 +21,8 @@ func GetCoinbaseAddress(txIdx int) sdk.AccAddress {
 	return append(CoinbaseAddressPrefix, txIndexBz...)
 }
 
-func SplitUseiWeiAmount(amt *big.Int) (sdk.Int, sdk.Int) {
+func SplitUseiWeiAmount(amt *big.Int) (math.Int, math.Int) {
 	wei := new(big.Int).Mod(amt, UseiToSweiMultiplier)
 	usei := new(big.Int).Quo(amt, UseiToSweiMultiplier)
-	return sdk.NewIntFromBigInt(usei), sdk.NewIntFromBigInt(wei)
+	return math.NewIntFromBigInt(usei), math.NewIntFromBigInt(wei)
 }

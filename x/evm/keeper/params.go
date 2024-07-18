@@ -3,6 +3,7 @@ package keeper
 import (
 	"math/big"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/sei-protocol/sei-chain/utils"
 	"github.com/sei-protocol/sei-chain/x/evm/config"
@@ -25,15 +26,15 @@ func (k *Keeper) GetBaseDenom(ctx sdk.Context) string {
 	return BaseDenom
 }
 
-func (k *Keeper) GetPriorityNormalizer(ctx sdk.Context) sdk.Dec {
+func (k *Keeper) GetPriorityNormalizer(ctx sdk.Context) sdkmath.LegacyDec {
 	return k.GetParams(ctx).PriorityNormalizer
 }
 
-func (k *Keeper) GetBaseFeePerGas(ctx sdk.Context) sdk.Dec {
+func (k *Keeper) GetBaseFeePerGas(ctx sdk.Context) sdkmath.LegacyDec {
 	return k.GetParams(ctx).BaseFeePerGas
 }
 
-func (k *Keeper) GetMinimumFeePerGas(ctx sdk.Context) sdk.Dec {
+func (k *Keeper) GetMinimumFeePerGas(ctx sdk.Context) sdkmath.LegacyDec {
 	return k.GetParams(ctx).MinimumFeePerGas
 }
 

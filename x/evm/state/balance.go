@@ -3,6 +3,7 @@ package state
 import (
 	"math/big"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/tracing"
@@ -28,7 +29,7 @@ func (s *DBImpl) SubBalance(evmAddr common.Address, amt *big.Int, reason tracing
 
 	usei, wei := SplitUseiWeiAmount(amt)
 	addr := s.getSeiAddress(evmAddr)
-	err := s.k.BankKeeper().SubUnlockedCoins(ctx, addr, sdk.NewCoins(sdk.NewCoin(s.k.GetBaseDenom(s.ctx), usei)), true)
+	err := s.k.BankKeeper().SubUnlockedCoins(ctx, addr, sdk.NewCoins(sdk.NewCoin(s.k.GetBaseDenom(s.ctx), usei)))
 	if err != nil {
 		s.err = err
 		return
@@ -47,7 +48,7 @@ func (s *DBImpl) SubBalance(evmAddr common.Address, amt *big.Int, reason tracing
 		s.logger.OnBalanceChange(evmAddr, oldBalance, newBalance, reason)
 	}
 
-	s.tempStateCurrent.surplus = s.tempStateCurrent.surplus.Add(sdk.NewIntFromBigInt(amt))
+	s.tempStateCurrent.surplus = s.tempStateCurrent.surplus.Add(math.NewIntFromBigInt(amt))
 }
 
 func (s *DBImpl) AddBalance(evmAddr common.Address, amt *big.Int, reason tracing.BalanceChangeReason) {
@@ -68,7 +69,7 @@ func (s *DBImpl) AddBalance(evmAddr common.Address, amt *big.Int, reason tracing
 
 	usei, wei := SplitUseiWeiAmount(amt)
 	addr := s.getSeiAddress(evmAddr)
-	err := s.k.BankKeeper().AddCoins(ctx, addr, sdk.NewCoins(sdk.NewCoin(s.k.GetBaseDenom(s.ctx), usei)), true)
+	err := s.k.BankKeeper().AddCoins(ctx, addr, sdk.NewCoins(sdk.NewCoin(s.k.GetBaseDenom(s.ctx), usei)))
 	if err != nil {
 		s.err = err
 		return
@@ -87,7 +88,7 @@ func (s *DBImpl) AddBalance(evmAddr common.Address, amt *big.Int, reason tracing
 		s.logger.OnBalanceChange(evmAddr, oldBalance, newBalance, reason)
 	}
 
-	s.tempStateCurrent.surplus = s.tempStateCurrent.surplus.Sub(sdk.NewIntFromBigInt(amt))
+	s.tempStateCurrent.surplus = s.tempStateCurrent.surplus.Sub(math.NewIntFromBigInt(amt))
 }
 
 func (s *DBImpl) GetBalance(evmAddr common.Address) *big.Int {
@@ -113,7 +114,7 @@ func (s *DBImpl) SetBalance(evmAddr common.Address, amt *big.Int, reason tracing
 		panic(s.err)
 	}
 	usei, _ := SplitUseiWeiAmount(amt)
-	coinsAmt := sdk.NewCoins(sdk.NewCoin(s.k.GetBaseDenom(s.ctx), usei.Add(sdk.OneInt())))
+	coinsAmt := sdk.NewCoins(sdk.NewCoin(s.k.GetBaseDenom(s.ctx), usei.Add(math.OneInt())))
 	if err := s.k.BankKeeper().MintCoins(s.ctx, types.ModuleName, coinsAmt); err != nil {
 		panic(err)
 	}

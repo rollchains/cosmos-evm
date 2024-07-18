@@ -7,11 +7,13 @@ import (
 	"fmt"
 	"math/big"
 
+	"cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/bech32"
-	"github.com/cosmos/ibc-go/v3/modules/apps/transfer/types"
-	clienttypes "github.com/cosmos/ibc-go/v3/modules/core/02-client/types"
-	connectiontypes "github.com/cosmos/ibc-go/v3/modules/core/03-connection/types"
+	"github.com/cosmos/ibc-go/v8/modules/apps/transfer/types"
+	clienttypes "github.com/cosmos/ibc-go/v8/modules/core/02-client/types"
+	connectiontypes "github.com/cosmos/ibc-go/v8/modules/core/03-connection/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/tracing"
@@ -132,7 +134,7 @@ func (p Precompile) RunAndCalculateGas(evm *vm.EVM, caller common.Address, calli
 	if gasLimitBigInt.Cmp(utils.BigMaxU64) > 0 {
 		gasLimitBigInt = utils.BigMaxU64
 	}
-	ctx = ctx.WithGasMeter(sdk.NewGasMeterWithMultiplier(ctx, gasLimitBigInt.Uint64()))
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeterWithMultiplier(ctx.GasMeter(), gasLimitBigInt.Uint64()))
 
 	operation = method.Name
 	switch method.Name {
@@ -177,7 +179,7 @@ func (p Precompile) transfer(ctx sdk.Context, method *abi.Method, args []interfa
 
 	coin := sdk.Coin{
 		Denom:  validatedArgs.denom,
-		Amount: sdk.NewIntFromBigInt(validatedArgs.amount),
+		Amount: math.NewIntFromBigInt(validatedArgs.amount),
 	}
 
 	revisionNumber, ok := args[5].(uint64)
@@ -261,7 +263,7 @@ func (p Precompile) transferWithDefaultTimeout(ctx sdk.Context, method *abi.Meth
 
 	coin := sdk.Coin{
 		Denom:  validatedArgs.denom,
-		Amount: sdk.NewIntFromBigInt(validatedArgs.amount),
+		Amount: math.NewIntFromBigInt(validatedArgs.amount),
 	}
 
 	connection, err := p.getChannelConnection(ctx, validatedArgs.port, validatedArgs.channelID)

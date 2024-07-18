@@ -4,14 +4,16 @@ import (
 	"github.com/CosmWasm/wasmd/x/wasm"
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	aclkeeper "github.com/cosmos/cosmos-sdk/x/accesscontrol/keeper"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	evmwasm "github.com/sei-protocol/sei-chain/x/evm/client/wasm"
 	evmkeeper "github.com/sei-protocol/sei-chain/x/evm/keeper"
 )
 
 func RegisterCustomPlugins(
+	c codec.Codec,
+	ics4Wrapper wasmtypes.ICS4Wrapper,
 	// oracle *oraclekeeper.Keeper,
 	// dex *dexkeeper.Keeper,
 	// epoch *epochkeeper.Keeper,
@@ -23,7 +25,6 @@ func RegisterCustomPlugins(
 	bankKeeper wasmtypes.Burner,
 	unpacker codectypes.AnyUnpacker,
 	portSource wasmtypes.ICS20TransferPortSource,
-	aclKeeper aclkeeper.Keeper,
 	evmKeeper *evmkeeper.Keeper,
 ) []wasmkeeper.Option {
 	// dexHandler := dexwasm.NewDexWasmQueryHandler(dex)
@@ -37,7 +38,7 @@ func RegisterCustomPlugins(
 		Custom: CustomQuerier(wasmQueryPlugin),
 	})
 	messengerHandlerOpt := wasmkeeper.WithMessageHandler(
-		CustomMessageHandler(router, channelKeeper, capabilityKeeper, bankKeeper, evmKeeper, unpacker, portSource),
+		CustomMessageHandler(c, router, ics4Wrapper, channelKeeper, capabilityKeeper, bankKeeper, evmKeeper, unpacker, portSource),
 	)
 
 	return []wasm.Option{

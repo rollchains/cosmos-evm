@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"time"
 
+	rpcclient "github.com/cometbft/cometbft/rpc/client"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/lib/ethapi"
 	"github.com/sei-protocol/sei-chain/x/evm/keeper"
 	"github.com/sei-protocol/sei-chain/x/evm/types"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
 )
 
 type TxPoolAPI struct {
@@ -41,7 +41,7 @@ func (t *TxPoolAPI) Content(ctx context.Context) (result map[string]map[string]m
 	}
 
 	total := t.txPoolConfig.maxNumTxs
-	resUnconfirmedTxs, err := t.tmClient.UnconfirmedTxs(ctx, nil, &total)
+	resUnconfirmedTxs, err := t.tmClient.UnconfirmedTxs(ctx, &total)
 	if err != nil {
 		return nil, err
 	}

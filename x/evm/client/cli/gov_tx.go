@@ -10,7 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 
 	"github.com/spf13/cobra"
 )
@@ -39,19 +39,24 @@ func NewAddERCNativePointerProposalTxCmd() *cobra.Command {
 				return err
 			}
 
-			// Convert proposal to RegisterPairsProposal Type
 			from := clientCtx.GetFromAddress()
 
+			title := args[0]
+			description := args[1]
+			metadata := ""
+
+			// TODO: reduce this type to match new v1 types
 			content := types.AddERCNativePointerProposalV2{
-				Title:       args[0],
-				Description: args[1],
+				Title:       title,
+				Description: description,
 				Token:       args[2],
 				Name:        args[3],
 				Symbol:      args[4],
 				Decimals:    uint32(decimals),
 			}
+			msgs := []sdk.Msg{&content}
 
-			msg, err := govtypes.NewMsgSubmitProposal(&content, deposit, from)
+			msg, err := govv1types.NewMsgSubmitProposal(msgs, deposit, from.String(), metadata, title, description, false)
 			if err != nil {
 				return err
 			}

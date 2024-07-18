@@ -8,15 +8,15 @@ import (
 	"sync"
 	"time"
 
+	rpcclient "github.com/cometbft/cometbft/rpc/client"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
+	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/eth/filters"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/sei-protocol/sei-chain/utils"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	"github.com/tendermint/tendermint/rpc/coretypes"
-	tmtypes "github.com/tendermint/tendermint/types"
 )
 
 const SleepInterval = 5 * time.Second
@@ -59,7 +59,7 @@ func NewSubscriptionAPI(tmClient rpcclient.Client, logFetcher *LogFetcher, subsc
 		}()
 		for {
 			res := <-subCh
-			ethHeader, err := encodeTmHeader(res.Data.(tmtypes.EventDataNewBlockHeader))
+			ethHeader, err := encodeTmHeader(res.Data.(tmtypes.EventDataNewBlock))
 			if err != nil {
 				fmt.Printf("error encoding new head event %#v due to %s\n", res.Data, err)
 				continue
@@ -243,16 +243,17 @@ func (s *SubscriptionManager) Unsubscribe(ctx context.Context, id SubscriberID) 
 }
 
 func encodeTmHeader(
-	header tmtypes.EventDataNewBlockHeader,
+	header tmtypes.EventDataNewBlock,
 ) (map[string]interface{}, error) {
-	blockHash := common.HexToHash(header.Header.Hash().String())
-	number := big.NewInt(header.Header.Height)
-	miner := common.HexToAddress(header.Header.ProposerAddress.String())
+	blockHash := common.HexToHash(header.Block.Hash().String())
+	number := big.NewInt(header.Block.Height)
+	miner := common.HexToAddress(header.Block.ProposerAddress.String())
 	gasLimit, gasWanted := int64(0), int64(0)
-	lastHash := common.HexToHash(header.Header.LastBlockID.Hash.String())
-	resultHash := common.HexToHash(header.Header.LastResultsHash.String())
-	appHash := common.HexToHash(header.Header.AppHash.String())
-	txHash := common.HexToHash(header.Header.DataHash.String())
+	lastHash := common.HexToHash(header.Block.LastBlockID.Hash.String())
+	resultHash := common.HexToHash(header.Block.LastResultsHash.String())
+	appHash := common.HexToHash(header.Block.AppHash.String())
+	txHash := common.HexToHash(header.Block.DataHash.String())
+
 	for _, txRes := range header.ResultFinalizeBlock.TxResults {
 		gasLimit += txRes.GasWanted
 		gasWanted += txRes.GasUsed
@@ -270,7 +271,7 @@ func encodeTmHeader(
 		"receiptsRoot":          resultHash,
 		"sha3Uncles":            common.Hash{}, // inapplicable to Sei
 		"stateRoot":             appHash,
-		"timestamp":             hexutil.Uint64(header.Header.Time.Unix()),
+		"timestamp":             hexutil.Uint64(header.Block.Time.Unix()),
 		"transactionsRoot":      txHash,
 		"mixHash":               common.Hash{},     // inapplicable to Sei
 		"excessBlobGas":         hexutil.Uint64(0), // inapplicable to Sei

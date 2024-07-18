@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types/v1beta1"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -29,13 +29,14 @@ func init() {
 	govtypes.RegisterProposalType(ProposalTypeAddCWERC721Pointer)
 	govtypes.RegisterProposalType(ProposalTypeAddERCNativePointerV2)
 
+	// TODO: no longer in the SDK?
 	// for marshal and unmarshal
-	govtypes.RegisterProposalTypeCodec(&AddERCNativePointerProposal{}, "evm/AddERCNativePointerProposal")
-	govtypes.RegisterProposalTypeCodec(&AddERCCW20PointerProposal{}, "evm/AddERCCW20PointerProposal")
-	govtypes.RegisterProposalTypeCodec(&AddERCCW721PointerProposal{}, "evm/AddERCCW721PointerProposal")
-	govtypes.RegisterProposalTypeCodec(&AddCWERC20PointerProposal{}, "evm/AddCWERC20PointerProposal")
-	govtypes.RegisterProposalTypeCodec(&AddCWERC721PointerProposal{}, "evm/AddCWERC721PointerProposal")
-	govtypes.RegisterProposalTypeCodec(&AddERCNativePointerProposalV2{}, "evm/AddCWERC721PointerProposalV2")
+	// govtypes.RegisterProposalTypeCodec(&AddERCNativePointerProposal{}, "evm/AddERCNativePointerProposal")
+	// govtypes.RegisterProposalTypeCodec(&AddERCCW20PointerProposal{}, "evm/AddERCCW20PointerProposal")
+	// govtypes.RegisterProposalTypeCodec(&AddERCCW721PointerProposal{}, "evm/AddERCCW721PointerProposal")
+	// govtypes.RegisterProposalTypeCodec(&AddCWERC20PointerProposal{}, "evm/AddCWERC20PointerProposal")
+	// govtypes.RegisterProposalTypeCodec(&AddCWERC721PointerProposal{}, "evm/AddCWERC721PointerProposal")
+	// govtypes.RegisterProposalTypeCodec(&AddERCNativePointerProposalV2{}, "evm/AddCWERC721PointerProposalV2")
 }
 
 func (p *AddERCNativePointerProposal) GetTitle() string { return p.Title }

@@ -3,7 +3,7 @@ package keeper
 import (
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/ethereum/go-ethereum/common"
@@ -35,7 +35,8 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		k.SetAddressMapping(ctx, sdk.MustAccAddressFromBech32(addr.SeiAddress), common.HexToAddress(addr.EthAddress))
 	}
 
-	erc20CodeID, err := k.wasmKeeper.Create(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), erc20.GetBin(), nil)
+	// TODO: use the codehash here?
+	erc20CodeID, _, err := k.wasmKeeper.Create(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), erc20.GetBin(), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -44,7 +45,7 @@ func (k *Keeper) InitGenesis(ctx sdk.Context, genState types.GenesisState) {
 		artifactsutils.GetCodeIDBz(erc20CodeID),
 	)
 
-	erc721CodeID, err := k.wasmKeeper.Create(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), erc721.GetBin(), nil)
+	erc721CodeID, _, err := k.wasmKeeper.Create(ctx, k.accountKeeper.GetModuleAddress(types.ModuleName), erc721.GetBin(), nil)
 	if err != nil {
 		panic(err)
 	}

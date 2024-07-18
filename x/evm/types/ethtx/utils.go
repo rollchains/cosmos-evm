@@ -25,7 +25,7 @@ func SetConvertIfPresent[U comparable, V any](orig U, converter func(U) V, sette
 	setter(converter(orig))
 }
 
-// validate a ethtypes.Transaction for sdk.Int overflow
+// validate a ethtypes.Transaction for math.Int overflow
 func ValidateEthTx(tx *ethtypes.Transaction) error {
 	if !IsValidInt256(tx.Value()) {
 		return errors.New("value overflow")

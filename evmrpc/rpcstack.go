@@ -30,10 +30,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"cosmossdk.io/log"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
-	"github.com/tendermint/tendermint/libs/log"
 )
 
 // HTTPConfig is the JSON-RPC/HTTP configuration.

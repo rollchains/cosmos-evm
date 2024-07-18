@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"math/big"
 
-	storetypes "github.com/cosmos/cosmos-sdk/store/types"
+	"cosmossdk.io/math"
+	sdkmath "cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -88,7 +90,13 @@ func HandlePaymentUsei(ctx sdk.Context, precompileAddr sdk.AccAddress, payer sdk
 	if !wei.IsZero() {
 		return sdk.Coin{}, fmt.Errorf("selected precompile function does not allow payment with non-zero wei remainder: received %s", value)
 	}
-	coin := sdk.NewCoin(sdk.MustGetBaseDenom(), usei)
+
+	base, err := sdk.GetBaseDenom()
+	if err != nil {
+		panic(fmt.Errorf("precompiles common: failed to get base denom: %w", err))
+	}
+
+	coin := sdk.NewCoin(base, usei)
 	// refund payer because the following precompile logic will debit the payments from payer's account
 	// this creates a new event manager to avoid surfacing these as cosmos events
 	if err := bankKeeper.SendCoins(ctx.WithEventManager(sdk.NewEventManager()), precompileAddr, payer, sdk.NewCoins(coin)); err != nil {
@@ -97,12 +105,12 @@ func HandlePaymentUsei(ctx sdk.Context, precompileAddr sdk.AccAddress, payer sdk
 	return coin, nil
 }
 
-func HandlePaymentUseiWei(ctx sdk.Context, precompileAddr sdk.AccAddress, payer sdk.AccAddress, value *big.Int, bankKeeper BankKeeper) (sdk.Int, sdk.Int, error) {
+func HandlePaymentUseiWei(ctx sdk.Context, precompileAddr sdk.AccAddress, payer sdk.AccAddress, value *big.Int, bankKeeper BankKeeper) (math.Int, math.Int, error) {
 	usei, wei := state.SplitUseiWeiAmount(value)
 	// refund payer because the following precompile logic will debit the payments from payer's account
 	// this creates a new event manager to avoid surfacing these as cosmos events
 	if err := bankKeeper.SendCoinsAndWei(ctx.WithEventManager(sdk.NewEventManager()), precompileAddr, payer, usei, wei); err != nil {
-		return sdk.Int{}, sdk.Int{}, err
+		return math.Int{}, math.Int{}, err
 	}
 	return usei, wei, nil
 }
@@ -115,7 +123,7 @@ sei gas price = fee / sei gas = fee / (evm gas * multiplier) = evm gas / multipl
 func GetRemainingGas(ctx sdk.Context, evmKeeper EVMKeeper) uint64 {
 	gasMultipler := evmKeeper.GetPriorityNormalizer(ctx)
 	seiGasRemaining := ctx.GasMeter().Limit() - ctx.GasMeter().GasConsumedToLimit()
-	return sdk.NewDecFromInt(sdk.NewIntFromUint64(seiGasRemaining)).Quo(gasMultipler).TruncateInt().Uint64()
+	return sdkmath.LegacyNewDecFromInt(sdkmath.NewIntFromUint64(seiGasRemaining)).Quo(gasMultipler).TruncateInt().Uint64()
 }
 
 func ExtractMethodID(input []byte) ([]byte, error) {

@@ -3,6 +3,8 @@ package ante
 import (
 	"math/big"
 
+	"cosmossdk.io/errors"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/consensus/misc/eip4844"
@@ -81,7 +83,7 @@ func (fc EVMFeeCheckDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 		}
 	}
 	if err := st.BuyGas(); err != nil {
-		return ctx, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, err.Error())
+		return ctx, errors.Wrap(sdkerrors.ErrInsufficientFunds, err.Error())
 	}
 	if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
 		surplus, err := stateDB.Finalize()
@@ -116,7 +118,7 @@ func (fc EVMFeeCheckDecorator) CalculatePriority(ctx sdk.Context, txData ethtx.T
 	if !ctx.IsCheckTx() && !ctx.IsReCheckTx() {
 		// metrics.HistogramEvmEffectiveGasPrice(gp)
 	}
-	priority := sdk.NewDecFromBigInt(gp).Quo(fc.evmKeeper.GetPriorityNormalizer(ctx)).TruncateInt().BigInt()
+	priority := sdkmath.LegacyNewDecFromBigInt(gp).Quo(fc.evmKeeper.GetPriorityNormalizer(ctx)).TruncateInt().BigInt()
 	if priority.Cmp(big.NewInt(fc.maxPriority)) > 0 {
 		priority = big.NewInt(fc.maxPriority)
 	}

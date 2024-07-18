@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	"github.com/sei-protocol/sei-chain/x/evm/keeper"
@@ -11,12 +12,12 @@ import (
 // ante surplus
 func FixTotalSupply(ctx sdk.Context, k *keeper.Keeper) error {
 	balances := k.BankKeeper().GetAccountsBalances(ctx)
-	correctSupply := sdk.ZeroInt()
+	correctSupply := math.ZeroInt()
 	for _, balance := range balances {
 		correctSupply = correctSupply.Add(balance.Coins.AmountOf(sdk.MustGetBaseDenom()))
 	}
-	totalWeiBalance := sdk.ZeroInt()
-	k.BankKeeper().IterateAllWeiBalances(ctx, func(aa sdk.AccAddress, i sdk.Int) bool {
+	totalWeiBalance := math.ZeroInt()
+	k.BankKeeper().IterateAllWeiBalances(ctx, func(aa sdk.AccAddress, i math.Int) bool {
 		totalWeiBalance = totalWeiBalance.Add(i)
 		return false
 	})
@@ -26,7 +27,7 @@ func FixTotalSupply(ctx sdk.Context, k *keeper.Keeper) error {
 		if err := k.BankKeeper().AddWei(ctx, k.AccountKeeper().GetModuleAddress(types.ModuleName), bankkeeper.OneUseiInWei.Sub(weiRemainder)); err != nil {
 			return err
 		}
-		weiInUsei = weiInUsei.Add(sdk.OneInt())
+		weiInUsei = weiInUsei.Add(math.OneInt())
 	}
 	correctSupply = correctSupply.Add(weiInUsei)
 	currentSupply := k.BankKeeper().GetSupply(ctx, sdk.MustGetBaseDenom()).Amount

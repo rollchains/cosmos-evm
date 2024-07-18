@@ -4,7 +4,8 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	errors "cosmossdk.io/errors"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,7 +19,7 @@ import (
 	"github.com/sei-protocol/sei-chain/x/evm/types"
 )
 
-var ErrorPointerToPointerNotAllowed = sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "cannot create a pointer to a pointer")
+var ErrorPointerToPointerNotAllowed = errors.Wrap(sdkerrors.ErrInvalidRequest, "cannot create a pointer to a pointer")
 
 // ERC20 -> Native Token
 func (k *Keeper) SetERC20NativePointer(ctx sdk.Context, token string, addr common.Address) error {

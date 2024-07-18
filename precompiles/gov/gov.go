@@ -7,7 +7,7 @@ import (
 	"math/big"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1types "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/vm"
@@ -143,7 +143,7 @@ func (p Precompile) vote(ctx sdk.Context, method *abi.Method, caller common.Addr
 	}
 	proposalID := args[0].(uint64)
 	voteOption := args[1].(int32)
-	err := p.govKeeper.AddVote(ctx, proposalID, voter, govtypes.NewNonSplitVoteOption(govtypes.VoteOption(voteOption)))
+	err := p.govKeeper.AddVote(ctx, proposalID, voter, govv1types.NewNonSplitVoteOption(govv1types.VoteOption(voteOption)))
 	if err != nil {
 		return nil, err
 	}

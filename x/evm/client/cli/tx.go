@@ -13,8 +13,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/cosmos/cosmos-sdk/crypto/hd"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -87,20 +85,31 @@ func CmdAssociateAddress() *cobra.Command {
 			if len(args) == 1 {
 				privHex = args[0]
 			} else {
-				txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+				txf, err := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+				if err != nil {
+					return err
+				}
+
 				kb := txf.Keybase()
 				info, err := kb.Key(clientCtx.GetFromName())
 				if err != nil {
 					return err
 				}
-				localInfo, ok := info.(keyring.LocalInfo)
-				if !ok {
+
+				if info.GetType() != keyring.TypeLocal {
 					return errors.New("can only associate address for local keys")
 				}
-				if localInfo.GetAlgo() != hd.Secp256k1Type {
-					return errors.New("can only use addresses using secp256k1")
-				}
-				priv, err := legacy.PrivKeyFromBytes([]byte(localInfo.PrivKeyArmor))
+
+				localInfo := info.GetLocal()
+
+				// TODO: required?
+				// if localInfo.GetAlgo() != hd.Secp256k1Type {
+				// 	return errors.New("can only use addresses using secp256k1")
+				// }
+
+				privBz := localInfo.PrivKey.Value
+
+				priv, err := legacy.PrivKeyFromBytes(privBz)
 				if err != nil {
 					return err
 				}
@@ -580,20 +589,27 @@ func getPrivateKey(cmd *cobra.Command) (*ecdsa.PrivateKey, error) {
 	if err != nil {
 		return nil, err
 	}
-	txf := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+	txf, err := tx.NewFactoryCLI(clientCtx, cmd.Flags())
+	if err != nil {
+		return nil, err
+	}
+
 	kb := txf.Keybase()
 	info, err := kb.Key(clientCtx.GetFromName())
 	if err != nil {
 		return nil, err
 	}
-	localInfo, ok := info.(keyring.LocalInfo)
-	if !ok {
+
+	if info.GetType() != keyring.TypeLocal {
 		return nil, errors.New("can only associate address for local keys")
 	}
-	if localInfo.GetAlgo() != hd.Secp256k1Type {
-		return nil, errors.New("can only use addresses using secp256k1")
-	}
-	priv, err := legacy.PrivKeyFromBytes([]byte(localInfo.PrivKeyArmor))
+
+	localInfo := info.GetLocal()
+	// if localInfo.GetAlgo() != hd.Secp256k1Type {
+	// 	return nil, errors.New("can only use addresses using secp256k1")
+	// }
+
+	priv, err := legacy.PrivKeyFromBytes(localInfo.PrivKey.Value)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,7 +16,7 @@ import (
 func (k *Keeper) VerifyBalance(ctx sdk.Context, addr common.Address) {
 	useiBalance := k.BankKeeper().GetBalance(ctx, k.GetSeiAddressOrDefault(ctx, addr), "usei").Amount
 	weiBalance := k.bankKeeper.GetWeiBalance(ctx, k.GetSeiAddressOrDefault(ctx, addr))
-	totalSeiBalance := useiBalance.Mul(sdk.NewInt(1_000_000_000_000)).Add(weiBalance).BigInt()
+	totalSeiBalance := useiBalance.Mul(sdkmath.NewInt(1_000_000_000_000)).Add(weiBalance).BigInt()
 	ethBalance, err := k.EthClient.BalanceAt(ctx.Context(), addr, big.NewInt(k.GetReplayInitialHeight(ctx)+ctx.BlockHeight()))
 	if err != nil {
 		panic(err)
@@ -80,7 +81,7 @@ func (k *Keeper) VerifyAccount(ctx sdk.Context, addr common.Address, accountData
 	}
 	useiBalance := k.BankKeeper().GetBalance(ctx, k.GetSeiAddressOrDefault(ctx, addr), "usei").Amount
 	weiBalance := k.bankKeeper.GetWeiBalance(ctx, k.GetSeiAddressOrDefault(ctx, addr))
-	totalSeiBalance := useiBalance.Mul(sdk.NewInt(1_000_000_000_000)).Add(weiBalance).BigInt()
+	totalSeiBalance := useiBalance.Mul(sdkmath.NewInt(1_000_000_000_000)).Add(weiBalance).BigInt()
 	if balance.Cmp(totalSeiBalance) != 0 {
 		panic(fmt.Sprintf("balance mismatch for address %s: expected %s, got %s", addr.Hex(), balance, totalSeiBalance))
 	}

@@ -24,7 +24,7 @@ import (
 	"github.com/sei-protocol/sei-chain/x/evm/types/ethtx"
 	minttypes "github.com/sei-protocol/sei-chain/x/mint/types"
 	"github.com/stretchr/testify/require"
-	tmtypes "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmtypes "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
 func TestStaking(t *testing.T) {

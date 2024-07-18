@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"embed"
 	"errors"
+	"fmt"
 	"math/big"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -182,11 +184,17 @@ func (p Precompile) redelegate(ctx sdk.Context, method *abi.Method, caller commo
 	srcValidatorBech32 := args[0].(string)
 	dstValidatorBech32 := args[1].(string)
 	amount := args[2].(*big.Int)
-	_, err := p.stakingKeeper.BeginRedelegate(sdk.WrapSDKContext(ctx), &stakingtypes.MsgBeginRedelegate{
+
+	base, err := sdk.GetBaseDenom()
+	if err != nil {
+		panic(fmt.Errorf("staking precompile: failed to get base denom: %w", err))
+	}
+
+	_, err = p.stakingKeeper.BeginRedelegate(sdk.WrapSDKContext(ctx), &stakingtypes.MsgBeginRedelegate{
 		DelegatorAddress:    delegator.String(),
 		ValidatorSrcAddress: srcValidatorBech32,
 		ValidatorDstAddress: dstValidatorBech32,
-		Amount:              sdk.NewCoin(sdk.MustGetBaseDenom(), sdk.NewIntFromBigInt(amount)),
+		Amount:              sdk.NewCoin(base, math.NewIntFromBigInt(amount)),
 	})
 	if err != nil {
 		return nil, err
@@ -211,7 +219,7 @@ func (p Precompile) undelegate(ctx sdk.Context, method *abi.Method, caller commo
 	_, err := p.stakingKeeper.Undelegate(sdk.WrapSDKContext(ctx), &stakingtypes.MsgUndelegate{
 		DelegatorAddress: delegator.String(),
 		ValidatorAddress: validatorBech32,
-		Amount:           sdk.NewCoin(p.evmKeeper.GetBaseDenom(ctx), sdk.NewIntFromBigInt(amount)),
+		Amount:           sdk.NewCoin(p.evmKeeper.GetBaseDenom(ctx), math.NewIntFromBigInt(amount)),
 	})
 	if err != nil {
 		return nil, err

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"math/big"
 
+	sdkmath "cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -123,11 +125,11 @@ func (p Precompile) RunAndCalculateGas(evm *vm.EVM, caller common.Address, _ com
 	}
 
 	gasMultiplier := p.evmKeeper.GetPriorityNormalizer(ctx)
-	gasLimitBigInt := sdk.NewDecFromInt(sdk.NewIntFromUint64(suppliedGas)).Mul(gasMultiplier).TruncateInt().BigInt()
+	gasLimitBigInt := sdkmath.LegacyNewDecFromInt(sdkmath.NewIntFromUint64(suppliedGas)).Mul(gasMultiplier).TruncateInt().BigInt()
 	if gasLimitBigInt.Cmp(utils.BigMaxU64) > 0 {
 		gasLimitBigInt = utils.BigMaxU64
 	}
-	ctx = ctx.WithGasMeter(sdk.NewGasMeterWithMultiplier(ctx, gasLimitBigInt.Uint64()))
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeterWithMultiplier(ctx.GasMeter(), gasLimitBigInt.Uint64()))
 
 	operation = method.Name
 	switch method.Name {

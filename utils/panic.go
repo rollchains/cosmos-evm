@@ -5,9 +5,9 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/armon/go-metrics"
 	"github.com/cosmos/cosmos-sdk/telemetry"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/hashicorp/go-metrics"
 )
 
 const HardFailPrefix = "hard fail error occurred"

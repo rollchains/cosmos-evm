@@ -3,9 +3,9 @@ package wasmbinding
 import (
 	"encoding/json"
 
+	errors "cosmossdk.io/errors"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 const (
@@ -27,7 +27,7 @@ func CustomQuerier(qp *QueryPlugin) func(ctx sdk.Context, request json.RawMessag
 	return func(ctx sdk.Context, request json.RawMessage) ([]byte, error) {
 		var contractQuery SeiQueryWrapper
 		if err := json.Unmarshal(request, &contractQuery); err != nil {
-			return nil, sdkerrors.Wrap(err, "Error parsing request data")
+			return nil, errors.Wrapf(err, "Error parsing request data")
 		}
 		switch contractQuery.Route {
 		case EVMRoute:

@@ -1,7 +1,7 @@
 package migrations
 
 import (
-	"github.com/cosmos/cosmos-sdk/store/prefix"
+	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/sei-protocol/sei-chain/x/evm/artifacts/erc20"
 	"github.com/sei-protocol/sei-chain/x/evm/artifacts/erc721"
@@ -12,7 +12,8 @@ import (
 
 func StoreCWPointerCode(ctx sdk.Context, k *keeper.Keeper, store20 bool, store721 bool) error {
 	if store20 {
-		erc20CodeID, err := k.WasmKeeper().Create(ctx, k.AccountKeeper().GetModuleAddress(types.ModuleName), erc20.GetBin(), nil)
+		// TODO: save the checksum (_) to the store?
+		erc20CodeID, _, err := k.WasmKeeper().Create(ctx, k.AccountKeeper().GetModuleAddress(types.ModuleName), erc20.GetBin(), nil)
 		if err != nil {
 			panic(err)
 		}
@@ -23,7 +24,7 @@ func StoreCWPointerCode(ctx sdk.Context, k *keeper.Keeper, store20 bool, store72
 	}
 
 	if store721 {
-		erc721CodeID, err := k.WasmKeeper().Create(ctx, k.AccountKeeper().GetModuleAddress(types.ModuleName), erc721.GetBin(), nil)
+		erc721CodeID, _, err := k.WasmKeeper().Create(ctx, k.AccountKeeper().GetModuleAddress(types.ModuleName), erc721.GetBin(), nil)
 		if err != nil {
 			panic(err)
 		}

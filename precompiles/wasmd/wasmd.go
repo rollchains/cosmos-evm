@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"math/big"
 
+	sdkmath "cosmossdk.io/math"
+	storetypes "cosmossdk.io/store/types"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -141,11 +143,11 @@ func (p Precompile) RunAndCalculateGas(evm *vm.EVM, caller common.Address, calli
 		return nil, 0, err
 	}
 	gasMultipler := p.evmKeeper.GetPriorityNormalizer(ctx)
-	gasLimitBigInt := sdk.NewDecFromInt(sdk.NewIntFromUint64(suppliedGas)).Mul(gasMultipler).TruncateInt().BigInt()
+	gasLimitBigInt := sdkmath.LegacyNewDecFromInt(sdkmath.NewIntFromUint64(suppliedGas)).Mul(gasMultipler).TruncateInt().BigInt()
 	if gasLimitBigInt.Cmp(utils.BigMaxU64) > 0 {
 		gasLimitBigInt = utils.BigMaxU64
 	}
-	ctx = ctx.WithGasMeter(sdk.NewGasMeterWithMultiplier(ctx, gasLimitBigInt.Uint64()))
+	ctx = ctx.WithGasMeter(storetypes.NewGasMeterWithMultiplier(ctx.GasMeter(), gasLimitBigInt.Uint64()))
 
 	operation = method.Name
 	switch method.Name {
@@ -213,7 +215,13 @@ func (p Precompile) instantiate(ctx sdk.Context, method *abi.Method, caller comm
 		rerr = err
 		return
 	}
-	coinsValue := coins.AmountOf(sdk.MustGetBaseDenom()).Mul(state.SdkUseiToSweiMultiplier).BigInt()
+
+	baseDenom, err := sdk.GetBaseDenom()
+	if err != nil {
+		panic(fmt.Errorf("precompiles wasmd: failed to get base denom: %w", err))
+	}
+
+	coinsValue := coins.AmountOf(baseDenom).Mul(state.SdkUseiToSweiMultiplier).BigInt()
 	if (value == nil && coinsValue.Sign() == 1) || (value != nil && coinsValue.Cmp(value) != 0) {
 		rerr = errors.New("coin amount must equal value specified")
 		return
@@ -233,7 +241,7 @@ func (p Precompile) instantiate(ctx sdk.Context, method *abi.Method, caller comm
 		rerr = err
 		return
 	}
-	useiAmt := coins.AmountOf(sdk.MustGetBaseDenom())
+	useiAmt := coins.AmountOf(baseDenom)
 	if value != nil && !useiAmt.IsZero() {
 		useiAmtAsWei := useiAmt.Mul(state.SdkUseiToSweiMultiplier).BigInt()
 		coin, err := pcommon.HandlePaymentUsei(ctx, p.evmKeeper.GetSeiAddressOrDefault(ctx, p.address), creatorAddr, useiAmtAsWei, p.bankKeeper)
@@ -279,6 +287,11 @@ func (p Precompile) executeBatch(ctx sdk.Context, method *abi.Method, caller com
 		return
 	}
 
+	baseDenom, err := sdk.GetBaseDenom()
+	if err != nil {
+		panic(fmt.Errorf("precompiles wasmd: failed to get base denom: %w", err))
+	}
+
 	executeMsgs := args[0].([]struct {
 		ContractAddress string `json:"contractAddress"`
 		Msg             []byte `json:"msg"`
@@ -297,7 +310,7 @@ func (p Precompile) executeBatch(ctx sdk.Context, method *abi.Method, caller com
 			rerr = err
 			return
 		}
-		messageAmount := coins.AmountOf(sdk.MustGetBaseDenom()).Mul(state.SdkUseiToSweiMultiplier).BigInt()
+		messageAmount := coins.AmountOf(baseDenom).Mul(state.SdkUseiToSweiMultiplier).BigInt()
 		validateValue.Add(validateValue, messageAmount)
 	}
 	// if validateValue is greater than zero, then value must be provided, and they must be equal
@@ -342,7 +355,7 @@ func (p Precompile) executeBatch(ctx sdk.Context, method *abi.Method, caller com
 			rerr = err
 			return
 		}
-		useiAmt := coins.AmountOf(sdk.MustGetBaseDenom())
+		useiAmt := coins.AmountOf(baseDenom)
 		if valueCopy != nil && !useiAmt.IsZero() {
 			// process coin amount from the value provided
 			useiAmtAsWei := useiAmt.Mul(state.SdkUseiToSweiMultiplier).BigInt()
@@ -410,6 +423,11 @@ func (p Precompile) execute(ctx sdk.Context, method *abi.Method, caller common.A
 		return
 	}
 
+	baseDenom, err := sdk.GetBaseDenom()
+	if err != nil {
+		panic(fmt.Errorf("precompiles wasmd: failed to get base denom: %w", err))
+	}
+
 	// type assertion will always succeed because it's already validated in p.Prepare call in Run()
 	contractAddrStr := args[0].(string)
 	if caller.Cmp(callingContract) != 0 {
@@ -437,7 +455,7 @@ func (p Precompile) execute(ctx sdk.Context, method *abi.Method, caller common.A
 		rerr = err
 		return
 	}
-	coinsValue := coins.AmountOf(sdk.MustGetBaseDenom()).Mul(state.SdkUseiToSweiMultiplier).BigInt()
+	coinsValue := coins.AmountOf(baseDenom).Mul(state.SdkUseiToSweiMultiplier).BigInt()
 	if (value == nil && coinsValue.Sign() == 1) || (value != nil && coinsValue.Cmp(value) != 0) {
 		rerr = errors.New("coin amount must equal value specified")
 		return
@@ -456,7 +474,7 @@ func (p Precompile) execute(ctx sdk.Context, method *abi.Method, caller common.A
 		return
 	}
 
-	useiAmt := coins.AmountOf(sdk.MustGetBaseDenom())
+	useiAmt := coins.AmountOf(baseDenom)
 	if value != nil && !useiAmt.IsZero() {
 		useiAmtAsWei := useiAmt.Mul(state.SdkUseiToSweiMultiplier).BigInt()
 		coin, err := pcommon.HandlePaymentUsei(ctx, p.evmKeeper.GetSeiAddressOrDefault(ctx, p.address), senderAddr, useiAmtAsWei, p.bankKeeper)

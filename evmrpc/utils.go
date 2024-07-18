@@ -8,20 +8,19 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/crypto/hd"
+	"github.com/cosmos/cosmos-sdk/codec/legacy"
 
+	"github.com/cometbft/cometbft/libs/bytes"
+	rpcclient "github.com/cometbft/cometbft/rpc/client"
+	coretypes "github.com/cometbft/cometbft/rpc/core/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
-	"github.com/cosmos/cosmos-sdk/codec/legacy"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/sei-protocol/sei-chain/utils/metrics"
 	"github.com/sei-protocol/sei-chain/x/evm/keeper"
-	"github.com/tendermint/tendermint/libs/bytes"
-	rpcclient "github.com/tendermint/tendermint/rpc/client"
-	"github.com/tendermint/tendermint/rpc/coretypes"
 )
 
 const LatestCtxHeight int64 = -1
@@ -85,16 +84,13 @@ func getAddressPrivKeyMap(kb keyring.Keyring) map[string]*ecdsa.PrivateKey {
 		return res
 	}
 	for _, key := range keys {
-		localInfo, ok := key.(keyring.LocalInfo)
-		if !ok {
-			// will only show local key
+		if key.GetType() != keyring.TypeLocal {
 			continue
 		}
-		if localInfo.GetAlgo() != hd.Secp256k1Type {
-			fmt.Printf("Skipping address %s because it isn't signed with secp256k1\n", localInfo.Name)
-			continue
-		}
-		priv, err := legacy.PrivKeyFromBytes([]byte(localInfo.PrivKeyArmor))
+
+		privKeyBz := key.GetLocal().PrivKey.Value
+
+		priv, err := legacy.PrivKeyFromBytes(privKeyBz)
 		if err != nil {
 			continue
 		}
@@ -190,9 +186,12 @@ func CheckVersion(ctx sdk.Context, k *keeper.Keeper) error {
 }
 
 func bankExists(ctx sdk.Context, k *keeper.Keeper) bool {
-	return ctx.KVStore(k.BankKeeper().GetStoreKey()).VersionExists(ctx.BlockHeight())
+	// TODO(reece): implement this
+	// return ctx.KVStore(k.BankKeeper().GetStoreKey()).VersionExists(ctx.BlockHeight())
+	return true
 }
 
 func evmExists(ctx sdk.Context, k *keeper.Keeper) bool {
-	return ctx.KVStore(k.GetStoreKey()).VersionExists(ctx.BlockHeight())
+	// TODO(reece): implement this
+	return true
 }

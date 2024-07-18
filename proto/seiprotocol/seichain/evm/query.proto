@@ -2,7 +2,7 @@ syntax = "proto3";
 package seiprotocol.seichain.evm;
 
 import "google/api/annotations.proto";
-import "evm/enums.proto";
+import "seiprotocol/seichain/evm/enums.proto";
 
 option go_package = "github.com/sei-protocol/sei-chain/x/evm/types";
 

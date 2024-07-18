@@ -4,7 +4,7 @@ package seiprotocol.seichain.evm;
 import "google/protobuf/any.proto";
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
-import "evm/enums.proto";
+import "seiprotocol/seichain/evm/enums.proto";
 
 option go_package = "github.com/sei-protocol/sei-chain/x/evm/types";
 
@@ -31,7 +31,7 @@ message MsgEVMTransactionResponse {
 message MsgInternalEVMCall {
   string sender = 1;
   string value = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int"
+    (gogoproto.customtype) = "cosmossdk.io/math.Int"
   ];
   string to = 3;
   bytes data = 4;

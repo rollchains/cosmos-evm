@@ -1,3 +1,5 @@
+> This repo is now archived due to evm-os becoming open source apache2: https://github.com/cosmos/evm - no further developments to occur here.
+
 # Sei EVM
 
 A v0.50 impl of the sei network EVM. Following the same repo structure, just updated to latest
